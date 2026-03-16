@@ -68,6 +68,33 @@ def show_stats(name, player_class, element_1, element_2, level, stats):
     print('AFT: ' + str(stats['AFT']))
     print('')
 
+def game_hub(name, player_class, player_element, player_element_2, player_level, stats):
+    while True:
+        print('')
+        print(YELLOW + BOLD + '--- HOME BASE ---' + RESET)
+        print('')
+        print(CYAN + ' 1. Enter Region' + RESET)
+        print(CYAN + ' 2. View Character' + RESET)
+        print(CYAN + ' 3. Save and Quit' + RESET)
+        print('')
+        hub_choice = input('What would you like to do? ')
+
+        if hub_choice == '1':
+            print('Region select coming soon.')
+        elif hub_choice == '2':
+            show_stats(name, player_class, player_element, player_element_2, player_level, stats)
+        elif hub_choice == '3':
+            with open('txt_rpg/save.txt', 'w') as file:
+                file.write(name + '\n')
+                file.write(player_class + '\n')
+                file.write(player_element + '\n')
+                file.write(player_element_2 + '\n')
+                file.write(player_level + '\n')
+            print('Game saved. Goodbye, ' + name + '.')
+            break
+        else:
+            print('Invalid choice.')
+                           
 # Title screen
 while True:
     print(YELLOW + BOLD + '================================' + RESET)
@@ -156,6 +183,7 @@ while True:
         print('Game saved.')
         stats = create_stats(player_class, player_element)
         show_stats(name, player_class, player_element, 'None', '0', stats)
+        game_hub(name, player_class, player_element, 'None', '0', stats)                             
     elif choice == '2':
         if not os.path.exists('txt_rpg/save.txt'):
             print('No save file found.')
@@ -173,7 +201,8 @@ while True:
             if player_element_2 != 'None':
                 print('Second element: ' + player_element_2)
             stats = create_stats(player_class, player_element)
-            show_stats(name, player_class, player_element, player_element_2, player_level, stats)                             
+            show_stats(name, player_class, player_element, player_element_2, player_level, stats)
+            game_hub(name, player_class, player_element, player_element_2, player_level, stats)                             
     elif choice == '4':
         break
     elif choice == '3':
