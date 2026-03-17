@@ -41,6 +41,15 @@ class_mods = {
     'Alchemist': {'ATK': 1, 'DEF': 0, 'ETK': 4, 'EDF': 0, 'EVN': 1, 'SPD': 2, 'AFT': 3},
     'Druid':     {'ATK': 0, 'DEF': 3, 'ETK': 0, 'EDF': 4, 'EVN': 1, 'SPD': 0, 'AFT': 2},
 }
+# Base class list
+base_classes = ['Warrior', 'Caster', 'Sage', 'Magi']
+# Class mastery paths
+mastery_paths = {
+    'Warrior': ['Warden', 'Arbiter'],
+    'Caster':  ['Ranger', 'Channeler'],
+    'Sage':    ['Shaman', 'Primal'],
+    'Magi':    ['Alchemist', 'Druid'],
+}
 
 # Element stat modifiers
 element_mods = {
@@ -56,6 +65,23 @@ element_mods = {
     'Water':    {'HP': 6, 'ATK': 0, 'DEF': 1, 'ETK': 0, 'EDF': 1, 'EVN': 1, 'SPD': 0, 'AFT': 1},
     'Ice':      {'HP': -2, 'ATK': 2, 'DEF': -3, 'ETK': 4, 'EDF': 2, 'EVN': 2, 'SPD': 3, 'AFT': 2},
     'Aether':   {'HP': 2, 'ATK': 0, 'DEF': 0, 'ETK': 0, 'EDF': 0, 'EVN': 4, 'SPD': 0, 'AFT': 4},
+}
+# Element progression trees
+element_trees = {
+    'Earth': ['Earth', 'Stone', 'Nature'],
+    'Air':   ['Air', 'Storm', 'Electric'],
+    'Fire':  ['Fire', 'Magma', 'Plasma'],
+    'Water': ['Water', 'Ice', 'Aether'],
+}
+
+# Move power Values
+move_power = {
+    'basic': 60,
+    'A': 80,
+    'B': 100,
+    'C': 120,
+    'D': 145,
+    'E': 170,
 }
 
 def create_stats(player_class, element):
@@ -115,13 +141,18 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
                 continue
             print('')
             print('Entering ' + region + ' Region on ' + difficulty + ' difficulty...')
+            run_ended = False
             for path in range(1, 5):
-                run_path(path, region, difficulty, name, player_class, player_element, stats)
-            print('')
-            print('A powerful presence blocks your path...')
-            print('[Boss battle placeholder]')
-            print('')
-            print('You completed the ' + region + ' Region!')
+                result = run_path(path, region, difficulty, name, player_class, player_element, stats, player_level)
+                if result in ['lost', 'fled']:
+                    run_ended = True
+                    break
+            if not run_ended:
+                print('')
+                print('A powerful presence blocks your path...')
+                print('[Boss battle placeholder]')
+                print('')
+                print('You completed the ' + region + ' Region!')
         elif hub_choice == '2':
             show_stats(name, player_class, player_element, player_element_2, player_level, stats)
         elif hub_choice == '3':
@@ -185,7 +216,7 @@ def select_difficulty():
         else:
             print('Invalid choice.')
 
-def run_path(path_number, region, difficulty, name, player_class, player_element, stats):
+def run_path(path_number, region, difficulty, name, player_class, player_element, stats, player_level):
     print('')
     print(YELLOW + BOLD + '--- Path ' + str(path_number) + ' of 4 ---' + RESET)
     print('')
@@ -232,7 +263,13 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
 
         if encounter == 'battle':
             print('The Dim emerge from the shadows!')
-            print('[Battle placeholder]')
+            result = battle(name, stats, region, difficulty, player_level)
+            if result == False:
+                print('Your journey ends here...')
+                return 'lost'
+            elif result == 'fled':
+                print('You retreat back to base.')
+                return 'fled'
             had_random_battle = True
         elif encounter == 'nothing':
             print('The path is quiet. You press forward.')
@@ -242,7 +279,139 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
         elif encounter == 'loot':
             print('You spot something glinting off the path.')
             print('[Loot placeholder]')
-          
+
+def create_enemy(region, difficulty, player_level):
+    level = int(player_level)
+    if difficulty == 'Novice':
+        enemy_level = max(1, int(level * 0.8))
+    elif difficulty == 'Adept':
+        enemy_level = level
+    else:
+        enemy_level = max(1, int(level * 1.25))
+    
+    enemy_class = random.choice(base_classes)
+    if enemy_level >=30:
+        enemy_class = random.choice(mastery_paths[enemy_class])
+
+    enemy_element = region
+    if enemy_level >= 15 and difficulty != 'Novice':
+        tree = element_trees[region]
+        enemy_element = tree[1]
+    if enemy_level >= 35 and difficulty == 'Expert':
+        tree = element_trees[region]
+        enemy_element = tree[2]
+
+    enemy_element_2 = 'None'
+    if enemy_level >= 15:
+        other_trees = [t for t in element_trees if t != region]
+        second_tree = random.choice(other_trees)
+        if enemy_level >= 35 and difficulty == 'Expert':
+            enemy_element_2 = element_trees[second_tree][2]
+        elif enemy_level >= 15 and difficulty != 'Novice':
+            enemy_element_2 = element_trees[second_tree][1]
+        else:
+            enemy_element_2 = second_tree
+    
+    base = 15
+    c = class_mods[enemy_class]
+    e = element_mods[enemy_element]
+    enemy_stats = {
+        'HP':  base + e['HP'] + enemy_level,
+        'ATK': base + c['ATK'] + e['ATK'] + enemy_level,
+        'DEF': base + c['DEF'] + e['DEF'] + enemy_level,
+        'ETK': base + c['ETK'] + e['ETK'] + enemy_level,
+        'EDF': base + c['EDF'] + e['EDF'] + enemy_level,
+        'EVN': base + c['EVN'] + e['EVN'] + enemy_level,
+        'SPD': base + c['SPD'] + e['SPD'] + enemy_level,
+        'AFT': base + c['AFT'] + e['AFT'] + enemy_level,
+    }
+    enemy = {
+        'name': 'Dim ' + enemy_element + ' ' + enemy_class,
+        'element': enemy_element,
+        'element_2': enemy_element_2,
+        'class': enemy_class,
+        'level': enemy_level,
+        'stats': enemy_stats,
+        'max_hp': enemy_stats['HP']
+    }
+    return enemy
+
+def battle(name, stats, region, difficulty, player_level):
+    enemy = create_enemy(region, difficulty, player_level)
+    player_hp = stats['HP']
+    enemy_hp = enemy['stats']['HP']
+    level = int(player_level)
+    max_ep = int((stats['ETK'] + stats['EDF']) * 0.75)
+    player_ep = max_ep
+    enemy_max_ep = int((enemy['stats']['ETK'] + enemy['stats']['EDF']) *0.75)
+    enemy_ep = enemy_max_ep
+
+    print('')
+    print(YELLOW + BOLD + '--- BATTLE ---' + RESET)
+    print('A ' + enemy['name'] + ' (Lv ' + str(enemy['level']) + ') appears!')
+    print('')
+
+    while True:
+        print('Your HP: ' + str(player_hp) + '/' + str(stats['HP']) + ' EP: ' + str(player_ep) + '/' + str(max_ep))
+        print('Enemy HP: ' + str(enemy_hp) + '/' + str(enemy['max_hp']))
+        print('')
+        print(CYAN + ' 1. Attack (physical)' + RESET)
+        if level >= 5 and player_ep >=10:
+            print(CYAN + ' 2. EP Attack A' + RESET + ' - 10 EP')
+        else:
+            print(' 2. EP Attack A - locked')
+        print(CYAN + ' 3. Defend' + RESET)
+        print(CYAN + ' 4. Use Item' + RESET)
+        print(CYAN + ' 5. Flee' + RESET)
+        print('')
+        action = input('Choose action: ')
+
+        if action == '1':
+            damage = max(1, int(((2 * level / 5 + 2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
+            enemy_hp = enemy_hp - damage
+            print('You strike for ' + str(damage) + ' damage!')
+        elif action == '2':
+            if level < 5 or player_ep < 10:
+                print('Cannot use that attack.')
+                continue
+            damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+            enemy_hp = enemy_hp - damage
+            player_ep = player_ep - 10
+            print('You unleash elemental force for ' + str(damage) + ' damage!')
+        elif action == '3':
+            print('You brace yourself.')
+        elif action == '4':
+            print('[Item placeholder]')
+            continue
+        elif action == '5':
+            print('You flee from the battle!')
+            return 'fled'
+        else:
+            print('Invalid choice.')
+            continue
+
+        if enemy_hp <= 0:
+            print('')
+            print('The ' + enemy['name'] + ' fades into darkness.')
+            print('Victory!')
+            return True
+        
+        print('')
+        enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+        if action == '3':
+            enemy_damage = max(1, int(enemy_damage * 0.5))
+        player_hp = player_hp - enemy_damage
+        print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+
+        if player_hp <= 0:
+            print('')
+            print('You have fallen...')
+            return False
+        
+        player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
+        enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
+        print('')
+                                                          
 # Title screen
 while True:
     print(YELLOW + BOLD + '================================' + RESET)
