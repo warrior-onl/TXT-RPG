@@ -14,21 +14,47 @@ EARTH = '\033[1m\033[43m\033[30m'
 AIR   = '\033[1m\033[107m\033[30m'
 FIRE  = '\033[1m\033[101m\033[30m'
 WATER = '\033[1m\033[44m\033[30m'
+# Refined element colors
+STONE = '\033[1m\033[100m\033[97m'
+STORM = '\033[1m\033[42m\033[97m'
+MAGMA = '\033[1m\033[41m\033[97m'
+ICE   = '\033[1m\033[106m\033[97m'
+# Evolved element colors
+NATURE   = '\033[1m\033[40m\033[97m'
+ELECTRIC = '\033[1m\033[103m\033[97m'
+PLASMA   = '\033[1m\033[104m\033[97m'
+AETHER   = '\033[1m\033[45m\033[97m'
 
 # Class stat modifiers
 class_mods = {
-    'Warrior': {'ATK': 2, 'DEF': 2, 'ETK': 0, 'EDF': 0, 'EVN': 1, 'SPD': 0, 'AFT': 0},
-    'Caster':  {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 0, 'SPD': 1, 'AFT': 0},
-    'Sage':    {'ATK': 0, 'DEF': 0, 'ETK': 1, 'EDF': 1, 'EVN': 1, 'SPD': 1, 'AFT': 1},
-    'Magi':    {'ATK': 0, 'DEF': 0, 'ETK': 2, 'EDF': 2, 'EVN': 0, 'SPD': 0, 'AFT': 1},
+    'Warrior':   {'ATK': 2, 'DEF': 2, 'ETK': 0, 'EDF': 0, 'EVN': 1, 'SPD': 0, 'AFT': 0},
+    'Warden':    {'ATK': 2, 'DEF': 3, 'ETK': 0, 'EDF': 3, 'EVN': 2, 'SPD': 0, 'AFT': 0},
+    'Arbiter':   {'ATK': 1, 'DEF': 1, 'ETK': 4, 'EDF': 1, 'EVN': 2, 'SPD': 1, 'AFT': 0},
+    'Caster':    {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 0, 'SPD': 1, 'AFT': 0},
+    'Ranger':    {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 2, 'SPD': 4, 'AFT': 0},              
+    'Channeler': {'ATK': 3, 'DEF': 1, 'ETK': 3, 'EDF': 1, 'EVN': 0, 'SPD': 2, 'AFT': 0},
+    'Sage':      {'ATK': 0, 'DEF': 0, 'ETK': 1, 'EDF': 1, 'EVN': 1, 'SPD': 1, 'AFT': 1},
+    'Shaman':    {'ATK': 0, 'DEF': 2, 'ETK': 1, 'EDF': 2, 'EVN': 2, 'SPD': 1, 'AFT': 2},
+    'Primal':    {'ATK': 3, 'DEF': 0, 'ETK': 3, 'EDF': 1, 'EVN': 1, 'SPD': 1, 'AFT': 1},
+    'Magi':      {'ATK': 0, 'DEF': 0, 'ETK': 2, 'EDF': 2, 'EVN': 0, 'SPD': 0, 'AFT': 1},
+    'Alchemist': {'ATK': 1, 'DEF': 0, 'ETK': 4, 'EDF': 0, 'EVN': 1, 'SPD': 2, 'AFT': 3},
+    'Druid':     {'ATK': 0, 'DEF': 3, 'ETK': 0, 'EDF': 4, 'EVN': 1, 'SPD': 0, 'AFT': 2},
 }
 
 # Element stat modifiers
 element_mods = {
-    'Earth':  {'HP': 5, 'ATK': 1, 'DEF': 3, 'ETK': 1, 'EDF': 2, 'EVN': -1, 'SPD': -1, 'AFT': 0},
-    'Air':    {'HP': 2, 'ATK': -1, 'DEF': -1, 'ETK': 2, 'EDF': 1, 'EVN': 3, 'SPD': 4, 'AFT': 0},
-    'Fire':   {'HP': -2, 'ATK': 4, 'DEF': 0, 'ETK': 4, 'EDF': 0, 'EVN': 2, 'SPD': 2, 'AFT': 0},
-    'Water':  {'HP': 6, 'ATK': 0, 'DEF': 1, 'ETK': 0, 'EDF': 1, 'EVN': 1, 'SPD': 0, 'AFT': 1},
+    'Earth':    {'HP': 5, 'ATK': 1, 'DEF': 3, 'ETK': 1, 'EDF': 2, 'EVN': -1, 'SPD': -1, 'AFT': 0},
+    'Stone':    {'HP': 6, 'ATK': 0, 'DEF': 4, 'ETK': 0, 'EDF': 4, 'EVN': -2, 'SPD': -2, 'AFT': 0},
+    'Nature':   {'HP': 8, 'ATK': -3, 'DEF': 1, 'ETK': -3, 'EDF': 1, 'EVN': 2, 'SPD': -2,'AFT': 6},
+    'Air':      {'HP': 2, 'ATK': -1, 'DEF': -1, 'ETK': 2, 'EDF': 1, 'EVN': 3, 'SPD': 4, 'AFT': 0},
+    'Storm':    {'HP': 2, 'ATK': -1, 'DEF': -1, 'ETK': 2, 'EDF': 2, 'EVN': 2, 'SPD': 0, 'AFT': 4},
+    'Electric': {'HP': 0, 'ATK': 3, 'DEF': -2, 'ETK': 3, 'EDF': -2, 'EVN': 5, 'SPD': 3, 'AFT': 0},
+    'Fire':     {'HP': -2, 'ATK': 4, 'DEF': 0, 'ETK': 4, 'EDF': 0, 'EVN': 2, 'SPD': 2, 'AFT': 0},
+    'Magma':    {'HP': 2, 'ATK': 1, 'DEF': 3, 'ETK': 1, 'EDF': 3, 'EVN': 0, 'SPD': -2, 'AFT': 2},
+    'Plasma':   {'HP': -4, 'ATK': 7, 'DEF': -3, 'ETK': 7, 'EDF': -3, 'EVN': 1, 'SPD': 5, 'AFT': 0},
+    'Water':    {'HP': 6, 'ATK': 0, 'DEF': 1, 'ETK': 0, 'EDF': 1, 'EVN': 1, 'SPD': 0, 'AFT': 1},
+    'Ice':      {'HP': -2, 'ATK': 2, 'DEF': -3, 'ETK': 4, 'EDF': 2, 'EVN': 2, 'SPD': 3, 'AFT': 2},
+    'Aether':   {'HP': 2, 'ATK': 0, 'DEF': 0, 'ETK': 0, 'EDF': 0, 'EVN': 4, 'SPD': 0, 'AFT': 4},
 }
 
 def create_stats(player_class, element):
