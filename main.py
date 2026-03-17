@@ -80,7 +80,10 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
         hub_choice = input('What would you like to do? ')
 
         if hub_choice == '1':
-            print('Region select coming soon.')
+            region = select_region()
+            if region is None:
+                continue
+            print('Entering ' + region + ' Region...')
         elif hub_choice == '2':
             show_stats(name, player_class, player_element, player_element_2, player_level, stats)
         elif hub_choice == '3':
@@ -94,7 +97,31 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
             break
         else:
             print('Invalid choice.')
-                           
+
+def select_region():
+    while True:
+        print('')
+        print(YELLOW + BOLD + '--- SELECT REGION ---' + RESET)
+        print('')
+        print(' 1. ' + EARTH + ' EARTH REGION ' + RESET + ' - grasslands, forests, deserts')
+        print(' 2. ' + AIR + ' AIR REGION ' + RESET + ' - levitating islands, mountains')
+        print(' 3. ' + FIRE + ' FIRE REGION ' + RESET + ' - desert, volcanic terrain')
+        print(' 4. ' + WATER + ' WATER REGION ' + RESET + ' - coasts, northern mountains, inland lakes')
+        print(CYAN + ' 5. Back' + RESET)
+        print('')
+        region_choice = input('Pick a region: ')
+
+        if region_choice == '1':
+            return 'Earth'
+        elif region_choice == '2':
+            return 'Air'
+        elif region_choice == '3':
+            return 'Fire'
+        elif region_choice == '4':
+            return 'Water'
+        else:
+            print('Invalid choice.')
+
 # Title screen
 while True:
     print(YELLOW + BOLD + '================================' + RESET)
