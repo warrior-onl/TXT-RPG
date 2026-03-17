@@ -1,6 +1,7 @@
 # OF NOBLE LIGHT - txt_rpg
 
 import os
+import random
 
 # Text colors
 RESET  = '\033[0m'
@@ -16,11 +17,11 @@ FIRE  = '\033[1m\033[101m\033[30m'
 WATER = '\033[1m\033[44m\033[30m'
 # Refined element colors
 STONE = '\033[1m\033[100m\033[97m'
-STORM = '\033[1m\033[42m\033[97m'
+STORM = '\033[1m\033[40m\033[97m'
 MAGMA = '\033[1m\033[41m\033[97m'
 ICE   = '\033[1m\033[106m\033[97m'
 # Evolved element colors
-NATURE   = '\033[1m\033[40m\033[97m'
+NATURE   = '\033[1m\033[42m\033[97m'
 ELECTRIC = '\033[1m\033[103m\033[97m'
 PLASMA   = '\033[1m\033[104m\033[97m'
 AETHER   = '\033[1m\033[45m\033[97m'
@@ -109,7 +110,18 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
             region = select_region()
             if region is None:
                 continue
-            print('Entering ' + region + ' Region...')
+            difficulty = select_difficulty()
+            if difficulty is None:
+                continue
+            print('')
+            print('Entering ' + region + ' Region on ' + difficulty + ' difficulty...')
+            for path in range(1, 5):
+                run_path(path, region, difficulty, name, player_class, player_element, stats)
+            print('')
+            print('A powerful presence blocks your path...')
+            print('[Boss battle placeholder]')
+            print('')
+            print('You completed the ' + region + ' Region!')
         elif hub_choice == '2':
             show_stats(name, player_class, player_element, player_element_2, player_level, stats)
         elif hub_choice == '3':
@@ -145,9 +157,92 @@ def select_region():
             return 'Fire'
         elif region_choice == '4':
             return 'Water'
+        elif region_choice == '5':
+            return None
         else:
             print('Invalid choice.')
 
+def select_difficulty():
+    while True:
+        print('')
+        print(YELLOW + BOLD + '--- SELECT DIFFICULTY ---' + RESET)
+        print('')
+        print(CYAN + ' 1. Novice' + RESET + ' - weaker enemies, base elements only')
+        print(CYAN + ' 2. Adept' + RESET + ' - matched enemies, base + refined elements')
+        print(CYAN + ' 3. Expert' + RESET + ' - stronger enemies, all elements')
+        print(CYAN + ' 4. Back' + RESET)
+        print('')
+        diff_choice = input('Pick a difficulty: ')
+
+        if diff_choice == '1':
+            return 'Novice'
+        elif diff_choice == '2':
+            return 'Adept'
+        elif diff_choice == '3':
+            return 'Expert'
+        elif diff_choice == '4':
+            return None
+        else:
+            print('Invalid choice.')
+
+def run_path(path_number, region, difficulty, name, player_class, player_element, stats):
+    print('')
+    print(YELLOW + BOLD + '--- Path ' + str(path_number) + ' of 4 ---' + RESET)
+    print('')
+    print('You come to a fork in the road.')
+    print('')
+    print(CYAN + ' 1. Left' + RESET)
+    print(CYAN + ' 2. Right' + RESET)
+    print('')
+    while True:
+        fork = input('Which way? ')
+        if fork in ['1', '2']:
+            break
+        print('Invalid choice.')
+
+    guaranteed = random.randint(1, 3)
+    had_random_battle = False
+
+    for stop in range(1, 4):
+        print('')
+        print('--- Stop ' + str(stop) + ' of 3 ---')
+
+        if stop == guaranteed:
+            encounter = 'battle'
+        else:
+            roll = random.randint(1, 100)
+            if had_random_battle:
+                if roll <= 10:
+                    encounter = 'battle'
+                elif roll <= 55:
+                    encounter = 'nothing'
+                elif roll <= 80:
+                    encounter = 'traveler'
+                else:
+                    encounter = 'loot'
+            else:
+                if roll <= 35:
+                    encounter = 'battle'
+                elif roll <= 70:
+                    encounter = 'nothing'
+                elif roll <= 90:
+                    encounter = 'traveler'
+                else:
+                    encounter = 'loot'
+
+        if encounter == 'battle':
+            print('The Dim emerge from the shadows!')
+            print('[Battle placeholder]')
+            had_random_battle = True
+        elif encounter == 'nothing':
+            print('The path is quiet. You press forward.')
+        elif encounter == 'traveler':
+            print('You spot a traveler on the road ahead.')
+            print('[Traveler placeholder]')
+        elif encounter == 'loot':
+            print('You spot something glinting off the path.')
+            print('[Loot placeholder]')
+          
 # Title screen
 while True:
     print(YELLOW + BOLD + '================================' + RESET)
