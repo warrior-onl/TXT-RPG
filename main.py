@@ -145,10 +145,12 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
             print('Entering ' + region + ' Region on ' + difficulty + ' difficulty...')
             run_ended = False
             for path in range(1, 5):
-                result = run_path(path, region, difficulty, name, player_class, player_element, stats, player_level)
-                if result in ['lost', 'fled']:
+                result = run_path(path, region, difficulty, name, player_class, player_element, stats, player_level, player_xp)
+                if result == 'lost' or result == 'fled':
                     run_ended = True
                     break
+                else:
+                    player_xp = result
             if not run_ended:
                 print('')
                 print('A powerful presence blocks your path...')
@@ -219,7 +221,7 @@ def select_difficulty():
         else:
             print('Invalid choice.')
 
-def run_path(path_number, region, difficulty, name, player_class, player_element, stats, player_level):
+def run_path(path_number, region, difficulty, name, player_class, player_element, stats, player_level, player_xp):
     print('')
     print(YELLOW + BOLD + '--- Path ' + str(path_number) + ' of 4 ---' + RESET)
     print('')
@@ -273,6 +275,12 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
             elif result == 'fled':
                 print('You retreat back to base.')
                 return 'fled'
+            else:
+                level = int(player_level)
+                ratio = max(0.1, 1 - (level * 0.008))
+                xp_gained = max(1, int(result * 10 * ratio))
+                player_xp = player_xp + xp_gained
+                print('Gained ' + str(xp_gained) + ' XP!')
             had_random_battle = True
         elif encounter == 'nothing':
             print('The path is quiet. You press forward.')
@@ -282,7 +290,7 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
         elif encounter == 'loot':
             print('You spot something glinting off the path.')
             print('[Loot placeholder]')
-
+    return player_xp
 def create_enemy(region, difficulty, player_level):
     level = int(player_level)
     if difficulty == 'Novice':
@@ -397,7 +405,7 @@ def battle(name, stats, region, difficulty, player_level):
             print('')
             print('The ' + enemy['name'] + ' fades into darkness.')
             print('Victory!')
-            return True
+            return enemy['level']
         
         print('')
         enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
