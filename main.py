@@ -100,7 +100,7 @@ def create_stats(player_class, element):
     }
     return stats
 
-def show_stats(name, player_class, element_1, element_2, level, stats):
+def show_stats(name, player_class, element_1, element_2, level, stats, player_xp):
     print('')
     print(YELLOW + BOLD + '--- CHARACTER ---' + RESET)
     print('Name:    ' + name)
@@ -109,6 +109,8 @@ def show_stats(name, player_class, element_1, element_2, level, stats):
     if element_2 != 'None':
         print('Slot 2: ' + element_2)
     print('Level:   ' + level)
+    xp_needed = int(level) * 25 + 10
+    print('XP:      ' + str(player_xp) + '/' + str(xp_needed))
     print('')
     print(YELLOW + BOLD + '--- STATS ---' + RESET)
     print('HP:  ' + str(stats['HP']))
@@ -121,7 +123,7 @@ def show_stats(name, player_class, element_1, element_2, level, stats):
     print('AFT: ' + str(stats['AFT']))
     print('')
 
-def game_hub(name, player_class, player_element, player_element_2, player_level, stats):
+def game_hub(name, player_class, player_element, player_element_2, player_level, stats, player_xp):
     while True:
         print('')
         print(YELLOW + BOLD + '--- HOME BASE ---' + RESET)
@@ -154,7 +156,7 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
                 print('')
                 print('You completed the ' + region + ' Region!')
         elif hub_choice == '2':
-            show_stats(name, player_class, player_element, player_element_2, player_level, stats)
+            show_stats(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
         elif hub_choice == '3':
             with open('txt_rpg/save.txt', 'w') as file:
                 file.write(name + '\n')
@@ -162,6 +164,7 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
                 file.write(player_element + '\n')
                 file.write(player_element_2 + '\n')
                 file.write(player_level + '\n')
+                file.write(str(player_xp) + '\n')
             print('Game saved. Goodbye, ' + name + '.')
             break
         else:
@@ -497,10 +500,11 @@ while True:
             file.write(player_element + '\n')
             file.write('None\n')
             file.write('0\n')
+            file.write('0\n')
         print('Game saved.')
         stats = create_stats(player_class, player_element)
-        show_stats(name, player_class, player_element, 'None', '0', stats)
-        game_hub(name, player_class, player_element, 'None', '0', stats)                             
+        show_stats(name, player_class, player_element, 'None', '0', stats, 0)
+        game_hub(name, player_class, player_element, 'None', '0', stats, 0)                             
     elif choice == '2':
         if not os.path.exists('txt_rpg/save.txt'):
             print('No save file found.')
@@ -512,17 +516,28 @@ while True:
             player_element = lines[2].strip()
             player_element_2 = lines[3].strip()
             player_level = lines[4].strip()
+            player_xp = int(lines[5].strip())
             print('')
             print('Welcome back, ' + name + '.')
             print('Level ' + player_level + ' ' + player_class + ' of ' + player_element + '.')
             if player_element_2 != 'None':
                 print('Second element: ' + player_element_2)
             stats = create_stats(player_class, player_element)
-            show_stats(name, player_class, player_element, player_element_2, player_level, stats)
-            game_hub(name, player_class, player_element, player_element_2, player_level, stats)                             
+            show_stats(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
+            game_hub(name, player_class, player_element, player_element_2, player_level, stats, player_xp)                             
     elif choice == '4':
         break
     elif choice == '3':
-        print('Delete Game')
+        if not os.path.exists('txt_rpg/save.txt'):
+            print('No save file found.')
+        else:
+            print('')
+            print('Are you sure? This cannot be undone.')
+            confirm = input('Delete save? (y/n): ')
+            if confirm == 'y':
+                os.remove('txt_rpg/save.txt')
+                print('Save file deleted.')
+            else:
+                print('Cancelled.')
     else:
         print('Invalid choice')
