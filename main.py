@@ -100,6 +100,31 @@ def create_stats(player_class, element):
     }
     return stats
 
+def check_level_up(player_level, player_xp, player_class, player_element, player_element_2, stats):
+    level = int(player_level)
+    while level < 100:
+        xp_needed = level * 25 + 10
+        if player_xp < xp_needed:
+            break
+        player_xp = player_xp - xp_needed
+        level = level + 1
+        mult = 0.151 + (0.001 * level)
+        c = class_mods[player_class]
+        e = element_mods[player_element]
+        hp_boost = 12 + e['HP']
+        if player_element_2 != 'None':
+            e2 = element_mods[player_element_2]
+            hp_boost = hp_boost + e2['HP']
+        stats['HP'] = stats['HP'] + max(1, int(hp_boost * mult))
+        for stat in ['ATK', 'DEF', 'ETK', 'EDF', 'EVN', 'SPD', 'AFT']:
+            boost = 8 + c[stat] + e[stat]
+            if player_element_2 != 'None':
+                boost = boost + e2[stat]
+            stats[stat] = stats[stat] + max(1, int(boost * mult))
+        print('')
+        print(YELLOW + BOLD + '*** LEVEL UP! Level ' + str(level) + ' ***' + RESET)
+    return str(level), player_xp, stats
+
 def show_stats(name, player_class, element_1, element_2, level, stats, player_xp):
     print('')
     print(YELLOW + BOLD + '--- CHARACTER ---' + RESET)
@@ -145,12 +170,12 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
             print('Entering ' + region + ' Region on ' + difficulty + ' difficulty...')
             run_ended = False
             for path in range(1, 5):
-                result = run_path(path, region, difficulty, name, player_class, player_element, stats, player_level, player_xp)
-                if result == 'lost' or result == 'fled':
+                result = run_path(path, region, difficulty, name, player_class, player_element, player_element_2, stats, player_level, player_xp)
+                if result in ['lost', 'fled']:
                     run_ended = True
                     break
                 else:
-                    player_xp = result
+                    player_xp, player_level = result
             if not run_ended:
                 print('')
                 print('A powerful presence blocks your path...')
@@ -221,27 +246,34 @@ def select_difficulty():
         else:
             print('Invalid choice.')
 
-def run_path(path_number, region, difficulty, name, player_class, player_element, stats, player_level, player_xp):
+def run_path(path_number, region, difficulty, name, player_class, player_element, player_element_2, stats, player_level, player_xp):
     print('')
     print(YELLOW + BOLD + '--- Path ' + str(path_number) + ' of 4 ---' + RESET)
     print('')
     print('You come to a fork in the road.')
     print('')
-    print(CYAN + ' 1. Left' + RESET)
-    print(CYAN + ' 2. Right' + RESET)
-    print('')
     while True:
+        print(CYAN + ' 1. Left' + RESET)
+        print(CYAN + ' 2. Right' + RESET)
+        print(CYAN + ' 3. View Character' + RESET)
+        print(CYAN + ' 4. Return to Base' + RESET)
+        print('')
         fork = input('Which way? ')
         if fork in ['1', '2']:
             break
-        print('Invalid choice.')
+        elif fork == '3':
+            show_stats(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
+        elif fork == '4':
+            return 'fled'
+        else:
+            print('Invalid choice.')
 
     guaranteed = random.randint(1, 3)
     had_random_battle = False
 
     for stop in range(1, 4):
         print('')
-        print('--- Stop ' + str(stop) + ' of 3 ---')
+        print(WHITE + '--- Stop ' + str(stop) + ' of 3 ---' + RESET)
 
         if stop == guaranteed:
             encounter = 'battle'
@@ -281,6 +313,7 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
                 xp_gained = max(1, int(result * 10 * ratio))
                 player_xp = player_xp + xp_gained
                 print('Gained ' + str(xp_gained) + ' XP!')
+                player_level, player_xp, stats = check_level_up(player_level, player_xp, player_class, player_element, player_element_2, stats)
             had_random_battle = True
         elif encounter == 'nothing':
             print('The path is quiet. You press forward.')
@@ -290,7 +323,8 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
         elif encounter == 'loot':
             print('You spot something glinting off the path.')
             print('[Loot placeholder]')
-    return player_xp
+    return player_xp, player_level
+
 def create_enemy(region, difficulty, player_level):
     level = int(player_level)
     if difficulty == 'Novice':
