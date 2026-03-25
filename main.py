@@ -77,6 +77,7 @@ element_trees = {
 # Move power Values
 move_power = {
     'basic': 60,
+    'basic_el': 50,
     'A': 80,
     'B': 100,
     'C': 120,
@@ -401,13 +402,14 @@ def battle(name, stats, region, difficulty, player_level):
         print('Enemy HP: ' + str(enemy_hp) + '/' + str(enemy['max_hp']))
         print('')
         print(CYAN + ' 1. Attack (physical)' + RESET)
+        print(CYAN + ' 2. Elemental Attack' + RESET)
         if level >= 5 and player_ep >=10:
-            print(CYAN + ' 2. EP Attack A' + RESET + ' - 10 EP')
+            print(CYAN + ' 3. EP Attack A' + RESET + ' - 10 EP')
         else:
-            print(' 2. EP Attack A - locked')
-        print(CYAN + ' 3. Defend' + RESET)
-        print(CYAN + ' 4. Use Item' + RESET)
-        print(CYAN + ' 5. Flee' + RESET)
+            print(' 3. EP Attack A - locked')
+        print(CYAN + ' 4. Defend' + RESET)
+        print(CYAN + ' 5. Use Item' + RESET)
+        print(CYAN + ' 6. Flee' + RESET)
         print('')
         action = input('Choose action: ')
 
@@ -416,6 +418,14 @@ def battle(name, stats, region, difficulty, player_level):
             enemy_hp = enemy_hp - damage
             print('You strike for ' + str(damage) + ' damage!')
         elif action == '2':
+            damage = max(1, int(((2 * level / 5 + 2) * move_power['basic_el'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+            enemy_hp = enemy_hp - damage
+            status_roll = random.randint(1, 100)
+            if status_roll <= 5:
+                print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
+            else:
+                print('You unleash elemental force for ' + str(damage) + ' damage!')
+        elif action == '3':
             if level < 5 or player_ep < 10:
                 print('Cannot use that attack.')
                 continue
@@ -423,12 +433,12 @@ def battle(name, stats, region, difficulty, player_level):
             enemy_hp = enemy_hp - damage
             player_ep = player_ep - 10
             print('You unleash elemental force for ' + str(damage) + ' damage!')
-        elif action == '3':
-            print('You brace yourself.')
         elif action == '4':
+            print('You brace yourself.')
+        elif action == '5':
             print('[Item placeholder]')
             continue
-        elif action == '5':
+        elif action == '6':
             print('You flee from the battle!')
             return 'fled'
         else:
@@ -443,7 +453,7 @@ def battle(name, stats, region, difficulty, player_level):
         
         print('')
         enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
-        if action == '3':
+        if action == '4':
             enemy_damage = max(1, int(enemy_damage * 0.5))
         player_hp = player_hp - enemy_damage
         print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
