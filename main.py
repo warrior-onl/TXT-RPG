@@ -193,6 +193,14 @@ def game_hub(name, player_class, player_element, player_element_2, player_level,
                 file.write(player_element_2 + '\n')
                 file.write(player_level + '\n')
                 file.write(str(player_xp) + '\n')
+                file.write(str(stats['HP']) + '\n')
+                file.write(str(stats['ATK']) + '\n')
+                file.write(str(stats['DEF']) + '\n')
+                file.write(str(stats['ETK']) + '\n')
+                file.write(str(stats['EDF']) + '\n')
+                file.write(str(stats['EVN']) + '\n')
+                file.write(str(stats['SPD']) + '\n')
+                file.write(str(stats['AFT']) + '\n')
             print('Game saved. Goodbye, ' + name + '.')
             break
         else:
@@ -382,6 +390,31 @@ def create_enemy(region, difficulty, player_level):
     }
     return enemy
 
+def player_attack(action, level, stats, enemy, enemy_hp, move_power):
+    if action == '1':
+        damage = max(1, int(((2 * level / 5 +2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
+        enemy_hp = enemy_hp - damage
+        print('You strike for ' + str(damage) + ' damage!')
+    elif action == '2':
+        damage = max(1, int(((2 * level / 5 + 2) * move_power['basic_el'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+        enemy_hp = enemy_hp - damage
+        status_roll = random.randint(1, 100)
+        if status_roll <=5:
+            print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
+        else:
+            print('You unleash elemental force for ' + str(damage) + ' damage!')
+    elif action == '3':
+        damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+        enemy_hp = enemy_hp - damage
+        print('You channel deep elemental power for ' + str(damage) + ' damage!')
+    return enemy_hp
+
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power):
+    enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+    player_hp = player_hp - enemy_damage
+    print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+    return player_hp
+
 def battle(name, stats, region, difficulty, player_level):
     enemy = create_enemy(region, difficulty, player_level)
     player_hp = stats['HP']
@@ -403,7 +436,7 @@ def battle(name, stats, region, difficulty, player_level):
         print('')
         print(CYAN + ' 1. Attack (physical)' + RESET)
         print(CYAN + ' 2. Elemental Attack' + RESET)
-        if level >= 5 and player_ep >=10:
+        if level >= 5 and player_ep >= 10:
             print(CYAN + ' 3. EP Attack A' + RESET + ' - 10 EP')
         else:
             print(' 3. EP Attack A - locked')
@@ -413,37 +446,50 @@ def battle(name, stats, region, difficulty, player_level):
         print('')
         action = input('Choose action: ')
 
-        if action == '1':
-            damage = max(1, int(((2 * level / 5 + 2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
-            enemy_hp = enemy_hp - damage
-            print('You strike for ' + str(damage) + ' damage!')
-        elif action == '2':
-            damage = max(1, int(((2 * level / 5 + 2) * move_power['basic_el'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
-            enemy_hp = enemy_hp - damage
-            status_roll = random.randint(1, 100)
-            if status_roll <= 5:
-                print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
-            else:
-                print('You unleash elemental force for ' + str(damage) + ' damage!')
-        elif action == '3':
-            if level < 5 or player_ep < 10:
-                print('Cannot use that attack.')
-                continue
-            damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
-            enemy_hp = enemy_hp - damage
-            player_ep = player_ep - 10
-            print('You unleash elemental force for ' + str(damage) + ' damage!')
-        elif action == '4':
-            print('You brace yourself.')
-        elif action == '5':
-            print('[Item placeholder]')
-            continue
-        elif action == '6':
-            print('You flee from the battle!')
-            return 'fled'
-        else:
+        if action not in ['1', '2', '3', '4', '5', '6']:
             print('Invalid choice.')
             continue
+        if action == '3' and (level < 5 or player_ep < 10):
+            print('Cannot use that attack.')
+            continue
+        if action == '5':
+            print('[Item placeholder]')
+            continue
+        if action == '6':
+            print('You flee from the battle!')
+            return 'fled'
+        
+        player_defending = action == '4'
+        player_faster = stats['SPD'] >= enemy['stats']['SPD']
+
+        if player_defending:
+            print('You brace yourself.')
+            print('')
+            old_hp = player_hp
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+            damage_taken = old_hp - player_hp
+            player_hp = player_hp + int(damage_taken * 0.5)
+        elif player_faster:
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power)
+            if action == '3':
+                player_ep = player_ep - 10
+            if enemy_hp <= 0:
+                print('')
+                print('The ' + enemy['name'] + ' fades into darkness.')
+                print('Victory!')
+                return enemy['level']
+            print('')
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+        else:
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+            if player_hp <= 0:
+                print('')
+                print('You have fallen...')
+                return False
+            print('')
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power)
+            if action == '3':
+                player_ep = player_ep - 10
 
         if enemy_hp <= 0:
             print('')
@@ -451,13 +497,6 @@ def battle(name, stats, region, difficulty, player_level):
             print('Victory!')
             return enemy['level']
         
-        print('')
-        enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
-        if action == '4':
-            enemy_damage = max(1, int(enemy_damage * 0.5))
-        player_hp = player_hp - enemy_damage
-        print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
-
         if player_hp <= 0:
             print('')
             print('You have fallen...')
@@ -546,6 +585,7 @@ while True:
                 print('Invalid choice.')
         print('')
         print('You are ' + name + ', ' + player_class + ' of ' + player_element + '.')
+        stats = create_stats(player_class, player_element)
         with open('txt_rpg/save.txt', 'w') as file:
             file.write(name + '\n')
             file.write(player_class + '\n')
@@ -553,8 +593,15 @@ while True:
             file.write('None\n')
             file.write('0\n')
             file.write('0\n')
+            file.write(str(stats['HP']) + '\n')
+            file.write(str(stats['ATK']) + '\n')
+            file.write(str(stats['DEF']) + '\n')
+            file.write(str(stats['ETK']) + '\n')
+            file.write(str(stats['EDF']) + '\n')
+            file.write(str(stats['EVN']) + '\n')
+            file.write(str(stats['SPD']) + '\n')
+            file.write(str(stats['AFT']) + '\n')
         print('Game saved.')
-        stats = create_stats(player_class, player_element)
         show_stats(name, player_class, player_element, 'None', '0', stats, 0)
         game_hub(name, player_class, player_element, 'None', '0', stats, 0)                             
     elif choice == '2':
@@ -574,7 +621,16 @@ while True:
             print('Level ' + player_level + ' ' + player_class + ' of ' + player_element + '.')
             if player_element_2 != 'None':
                 print('Second element: ' + player_element_2)
-            stats = create_stats(player_class, player_element)
+            stats = {
+                'HP': int(lines[6].strip()),
+                'ATK': int(lines[7].strip()),
+                'DEF': int(lines[8].strip()),
+                'ETK': int(lines[9].strip()),
+                'EDF': int(lines[10].strip()),
+                'EVN': int(lines[11].strip()),
+                'SPD': int(lines[12].strip()),
+                'AFT': int(lines[13].strip()),
+            }
             show_stats(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
             game_hub(name, player_class, player_element, player_element_2, player_level, stats, player_xp)                             
     elif choice == '4':
