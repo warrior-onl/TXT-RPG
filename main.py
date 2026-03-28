@@ -66,6 +66,7 @@ element_mods = {
     'Ice':      {'HP': -2, 'ATK': 2, 'DEF': -3, 'ETK': 4, 'EDF': 2, 'EVN': 2, 'SPD': 3, 'AFT': 2},
     'Aether':   {'HP': 2, 'ATK': 0, 'DEF': 0, 'ETK': 0, 'EDF': 0, 'EVN': 4, 'SPD': 0, 'AFT': 4},
 }
+
 # Element progression trees
 element_trees = {
     'Earth': ['Earth', 'Stone', 'Nature'],
@@ -73,6 +74,30 @@ element_trees = {
     'Fire':  ['Fire', 'Magma', 'Plasma'],
     'Water': ['Water', 'Ice', 'Aether'],
 }
+
+# Element matchups - attacker vs defender
+# 1.30 = advantage, 0.80 = disadvantage, 1.0 = neutral
+element_matchups = {
+    'Earth': {'Water': 1.30, 'Air': 0.80},
+    'Air':   {'Earth': 1.30, 'Fire': 0.80},
+    'Fire':  {'Air': 1.30, 'Water': 0.80},
+    'Water': {'Fire': 1.30, 'Earth': 0.80},
+}
+
+def get_matchup(attacker_element, defender_element, defender_element_2):
+    matchups = element_matchups.get(attacker_element, {})
+    mult1 = matchups.get(defender_element, 1.0)
+    if defender_element_2 != 'None':
+        mult2 = matchups.get(defender_element_2, 1.0)
+        if mult1 > 1.0 and mult2 < 1.0:
+            return 1.0
+        elif mult1 < 1.0 and mult2 > 1.0:
+            return 1.0
+        elif mult1 != 1.0:
+            return mult1
+        else:
+            return mult2
+    return mult1
 
 # Move power Values
 move_power = {
@@ -309,7 +334,7 @@ def run_path(path_number, region, difficulty, name, player_class, player_element
 
         if encounter == 'battle':
             print('The Dim emerge from the shadows!')
-            result = battle(name, stats, region, difficulty, player_level)
+            result = battle(name, stats, region, difficulty, player_level, player_element, player_element_2)
             if result == False:
                 print('Your journey ends here...')
                 return 'lost'
@@ -390,13 +415,16 @@ def create_enemy(region, difficulty, player_level):
     }
     return enemy
 
-def player_attack(action, level, stats, enemy, enemy_hp, move_power):
+def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element):
+    matchup = get_matchup(player_element, enemy['element'], enemy['element_2'])
     if action == '1':
         damage = max(1, int(((2 * level / 5 +2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
+        damage = int(damage * matchup)
         enemy_hp = enemy_hp - damage
         print('You strike for ' + str(damage) + ' damage!')
     elif action == '2':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['basic_el'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+        damage = int(damage * matchup)
         enemy_hp = enemy_hp - damage
         status_roll = random.randint(1, 100)
         if status_roll <=5:
@@ -405,17 +433,20 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power):
             print('You unleash elemental force for ' + str(damage) + ' damage!')
     elif action == '3':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+        damage = int(damage * matchup)
         enemy_hp = enemy_hp - damage
         print('You channel deep elemental power for ' + str(damage) + ' damage!')
     return enemy_hp
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power):
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2):
+    matchup = get_matchup(enemy['element'], player_element, player_element_2)
     enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+    enemy_damage = int(enemy_damage * matchup)
     player_hp = player_hp - enemy_damage
     print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
     return player_hp
 
-def battle(name, stats, region, difficulty, player_level):
+def battle(name, stats, region, difficulty, player_level, player_element, player_element_2):
     enemy = create_enemy(region, difficulty, player_level)
     player_hp = stats['HP']
     enemy_hp = enemy['stats']['HP']
@@ -466,11 +497,11 @@ def battle(name, stats, region, difficulty, player_level):
             print('You brace yourself.')
             print('')
             old_hp = player_hp
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
             damage_taken = old_hp - player_hp
             player_hp = player_hp + int(damage_taken * 0.5)
         elif player_faster:
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power)
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element)
             if action == '3':
                 player_ep = player_ep - 10
             if enemy_hp <= 0:
@@ -479,15 +510,15 @@ def battle(name, stats, region, difficulty, player_level):
                 print('Victory!')
                 return enemy['level']
             print('')
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
         else:
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power)
+            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
             if player_hp <= 0:
                 print('')
                 print('You have fallen...')
                 return False
             print('')
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power)
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element)
             if action == '3':
                 player_ep = player_ep - 10
 
