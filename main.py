@@ -438,13 +438,41 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
         print('You channel deep elemental power for ' + str(damage) + ' damage!')
     return enemy_hp
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2):
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep):
     matchup = get_matchup(enemy['element'], player_element, player_element_2)
-    enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
-    enemy_damage = int(enemy_damage * matchup)
-    player_hp = player_hp - enemy_damage
-    print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
-    return player_hp
+    hp_percent = enemy_hp / enemy['max_hp']
+
+    if hp_percent <= 0.20:
+        print('The ' + enemy['name'] + ' braces itself.')
+        return player_hp, enemy_ep, True
+    
+    use_etk = enemy['stats']['ETK'] > enemy['stats']['ATK']
+
+    if enemy['level'] >= 5 and enemy_ep >= 10:
+        if use_etk:
+            enemy_damage = max(1, int(((2* enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
+        else:
+            enemy_damage = max(1, int(((2* enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+        enemy_ep = enemy_ep - 10
+        enemy_damage = int(enemy_damage * matchup)
+        player_hp = player_hp - enemy_damage
+        if use_etk:
+            print('The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
+        else:
+            print('The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
+    else:
+        if use_etk:
+            enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic_el'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
+        else:
+            enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+        enemy_damage = int(enemy_damage * matchup)
+        player_hp = player_hp - enemy_damage
+        if use_etk:
+            print('The ' + enemy['name'] + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+        else:
+            print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+
+    return player_hp, enemy_ep, False        
 
 def battle(name, stats, region, difficulty, player_level, player_element, player_element_2):
     enemy = create_enemy(region, difficulty, player_level)
