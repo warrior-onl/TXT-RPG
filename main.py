@@ -420,14 +420,27 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
     if action == '1':
         damage = max(1, int(((2 * level / 5 +2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
         damage = int(damage * matchup)
+        crit = random.randint(1, 100) <= 5
+        if crit:
+            damage = int(damage * 1.5)
         enemy_hp = enemy_hp - damage
-        print('You strike for ' + str(damage) + ' damage!')
+        if crit:
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You strike for ' + str(damage) + ' damage!')
+        else:
+            print('You strike for ' + str(damage) + ' damage!')
     elif action == '2':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['basic_el'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
         damage = int(damage * matchup)
+        crit = random.randint(1, 100) <= 5
+        if crit:
+            damage = int(damage* 1.5)
         enemy_hp = enemy_hp - damage
         status_roll = random.randint(1, 100)
-        if status_roll <=5:
+        if crit and status_roll <= 5:
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleashed elemental force for ' + str(damage) + ' damage! Status effect applied!')
+        elif crit:
+            print(YELLOW + 'CRITITCAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage!')
+        elif status_roll <=5:
             print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         else:
             print('You unleash elemental force for ' + str(damage) + ' damage!')
@@ -455,22 +468,40 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
             enemy_damage = max(1, int(((2* enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
         enemy_ep = enemy_ep - 10
         enemy_damage = int(enemy_damage * matchup)
+        crit = random.randint(1, 100) <= 5
+        if crit:
+            enemy_damage = int(enemy_damage * 1.5)
         player_hp = player_hp - enemy_damage
         if use_etk:
-            print('The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
+            if crit:
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
+            else:
+                print('The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
         else:
-            print('The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
+            if crit:
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' unleashed a powerful strike for ' + str(enemy_damage) + ' damage!')
+            else:
+                print('The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
     else:
         if use_etk:
             enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic_el'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
         else:
             enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
         enemy_damage = int(enemy_damage * matchup)
+        crit = random.randint(1, 100) <= 5
+        if crit:
+            enemy_damage = int(enemy_damage * matchup)
         player_hp = player_hp - enemy_damage
         if use_etk:
-            print('The ' + enemy['name'] + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+            if crit:
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + ' The ' + enemy['name'] +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+            else:
+                print('The ' + enemy['name'] + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
         else:
-            print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+            if crit:
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' strikes ' + str(enemy_damage) + ' damage!')
+            else:
+                print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
 
     return player_hp, enemy_ep, False        
 
