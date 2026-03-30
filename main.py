@@ -110,6 +110,38 @@ move_power = {
     'E': 170,
 }
 
+# Element attack data: name, stat type, EP cost, power tier
+element_attacks = {
+    'Earth': {
+        'A': {'name': 'Mud Slide', 'stat': 'ATK', 'cost': 10, 'power': 'A'},
+        'B': {'name': 'Clay Skin', 'stat': 'buff', 'cost': 25, 'power': 'B'},
+        'C': {'name': 'Tremor', 'stat': 'ATK', 'cost': 45, 'power': 'C'},
+        'D': {'name': 'Sandstorm', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
+        'E': {'name': 'Earthquake', 'stat': 'ATK', 'cost': 100, 'power': 'E'},
+    },
+    'Air': {
+        'A': {'name': 'Gust', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
+        'B': {'name': 'Air Blade', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
+        'C': {'name': 'Tailwind', 'stat': 'buff', 'cost': 45, 'power': 'C'},
+        'D': {'name': 'Cyclone', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
+        'E': {'name': 'Hurricane', 'stat': 'ETK', 'cost': 100, 'power': 'E'},
+    },
+    'Fire': {
+        'A': {'name': 'Flare', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
+        'B': {'name': 'Fire Dance', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
+        'C': {'name': 'Overheat', 'stat': 'buff', 'cost': 45, 'power': 'C'},
+        'D': {'name': 'Scorched Earth', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
+        'E': {'name': 'Hellfire', 'stat': 'ATK', 'cost': 100, 'power': 'E'},
+    },
+    'Water': {
+        'A': {'name': 'Soak', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
+        'B': {'name': 'Riptide', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
+        'C': {'name': 'Flood', 'stat': 'ETK', 'cost': 45, 'power': 'C'},
+        'D': {'name': 'Tidal Surge', 'stat': 'ATK', 'cost': 70, 'power': 'D'},
+        'E': {'name': 'Tsunami', 'stat': 'ETK', 'cost': 100, 'power': 'E'},
+    },
+}
+
 def create_stats(player_class, element):
     base = 15
     c = class_mods[player_class]
@@ -437,9 +469,9 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
         enemy_hp = enemy_hp - damage
         status_roll = random.randint(1, 100)
         if crit and status_roll <= 5:
-            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleashed elemental force for ' + str(damage) + ' damage! Status effect applied!')
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         elif crit:
-            print(YELLOW + 'CRITITCAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage!')
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage!')
         elif status_roll <=5:
             print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         else:
@@ -447,8 +479,14 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
     elif action == '3':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
         damage = int(damage * matchup)
+        crit = random.randint(1, 100) <= 5
+        if crit:
+            damage= int(damage * 1.5)
         enemy_hp = enemy_hp - damage
-        print('You channel deep elemental power for ' + str(damage) + ' damage!')
+        if crit:
+            print(YELLOW + 'CRITICAL HIY! ' + RESET + 'You channel deep elemental power for ' + str(damage) + ' damage!')
+        else:
+            print('You channel deep elemental power for ' + str(damage) + ' damage!')
     return enemy_hp
 
 def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep):
@@ -479,7 +517,7 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
                 print('The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
         else:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' unleashed a powerful strike for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
             else:
                 print('The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
     else:
@@ -490,16 +528,16 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
         enemy_damage = int(enemy_damage * matchup)
         crit = random.randint(1, 100) <= 5
         if crit:
-            enemy_damage = int(enemy_damage * matchup)
+            enemy_damage = int(enemy_damage * 1.5)
         player_hp = player_hp - enemy_damage
         if use_etk:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + ' The ' + enemy['name'] +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
             else:
                 print('The ' + enemy['name'] + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
         else:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' strikes ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
             else:
                 print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
 
