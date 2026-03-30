@@ -525,7 +525,7 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             print('You brace yourself.')
             print('')
             old_hp = player_hp
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
             damage_taken = old_hp - player_hp
             player_hp = player_hp + int(damage_taken * 0.5)
         elif player_faster:
@@ -538,9 +538,9 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 print('Victory!')
                 return enemy['level']
             print('')
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
         else:
-            player_hp = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
             if player_hp <= 0:
                 print('')
                 print('You have fallen...')
