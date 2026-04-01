@@ -114,6 +114,22 @@ def get_matchup(attacker_element, defender_element, defender_element_2):
             return mult2
     return mult1
 
+def get_available_attacks(player_element, player_level):
+    level = int(player_level)
+    attacks = element_attacks.get(player_element, {})
+    available = []
+    if level >= 5 and 'A' in attacks:
+        available.append(attacks['A'])
+    if level >= 15 and 'B' in attacks:
+        available.append(attacks['B'])
+    if level >= 25 and 'C' in attacks:
+        available.append(attacks['C'])
+    if level >= 35 and 'D' in attacks:
+        available.append(attacks['D'])
+    if level >= 45 and 'E' in attacks:
+        available.append(attacks['E'])
+    return available
+
 # Move power Values
 move_power = {
     'basic': 60,
@@ -462,10 +478,10 @@ def create_enemy(region, difficulty, player_level):
     }
     return enemy
 
-def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element):
+def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack):
     matchup = get_matchup(player_element, enemy['element'], enemy['element_2'])
     if action == '1':
-        damage = max(1, int(((2 * level / 5 +2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
+        damage = max(1, int(((2 * level / 5 + 2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
         damage = int(damage * matchup)
         crit = random.randint(1, 100) <= 5
         if crit:
@@ -480,28 +496,36 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
         damage = int(damage * matchup)
         crit = random.randint(1, 100) <= 5
         if crit:
-            damage = int(damage* 1.5)
+            damage = int(damage * 1.5)
         enemy_hp = enemy_hp - damage
         status_roll = random.randint(1, 100)
         if crit and status_roll <= 5:
             print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         elif crit:
             print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage!')
-        elif status_roll <=5:
+        elif status_roll <= 5:
             print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         else:
             print('You unleash elemental force for ' + str(damage) + ' damage!')
-    elif action == '3':
-        damage = max(1, int(((2 * level / 5 + 2) * move_power['A'] * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+    elif selected_attack is not None:
+        el_color = element_colors.get(player_element, '')
+        power = move_power[selected_attack['power']]
+        if selected_attack['stat'] == 'ATK':
+            damage = max(1, int(((2 * level / 5 + 2) * power * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
+        elif selected_attack['stat'] == 'ETK':
+            damage = max(1, int(((2 * level / 5 + 2) * power * stats['ETK'] / enemy['stats']['EDF']) / 70 + 2))
+        elif selected_attack['stat'] == 'buff':
+            print(el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' [Buff placeholder]')
+            return enemy_hp
         damage = int(damage * matchup)
         crit = random.randint(1, 100) <= 5
         if crit:
-            damage= int(damage * 1.5)
+            damage = int(damage * 1.5)
         enemy_hp = enemy_hp - damage
         if crit:
-            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You channel deep elemental power for ' + str(damage) + ' damage!')
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' deals ' + str(damage) + ' damage!')
         else:
-            print('You channel deep elemental power for ' + str(damage) + ' damage!')
+            print(el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' deals ' + str(damage) + ' damage!')
     return enemy_hp
 
 def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep):
@@ -577,36 +601,56 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
     print('A ' + enemy_display + ' (Lv ' + str(enemy['level']) + ') appears!')
     print('')
 
+    available_attacks = get_available_attacks(player_element, player_level)
+    el_color = element_colors.get(player_element, '')
+
     while True:
         print('Your HP: ' + str(player_hp) + '/' + str(stats['HP']) + ' EP: ' + str(player_ep) + '/' + str(max_ep))
         print('Enemy HP: ' + str(enemy_hp) + '/' + str(enemy['max_hp']))
         print('')
         print(CYAN + ' 1. Attack (physical)' + RESET)
         print(CYAN + ' 2. Elemental Attack' + RESET)
-        if level >= 5 and player_ep >= 10:
-            print(CYAN + ' 3. EP Attack A' + RESET + ' - 10 EP')
-        else:
-            print(' 3. EP Attack A - locked')
-        print(CYAN + ' 4. Defend' + RESET)
-        print(CYAN + ' 5. Use Item' + RESET)
-        print(CYAN + ' 6. Flee' + RESET)
+        attack_offset = 3
+        for i, atk in enumerate(available_attacks):
+            num = attack_offset + i
+            if atk['stat'] == 'buff':
+                label = atk['name'] + ' (buff) - ' + str(atk['cost']) + ' EP'
+            else:
+                label = atk['name'] + ' - ' + str(atk['cost']) + ' EP'
+            if player_ep >= atk['cost']:
+                print(el_color + ' ' + str(num) + '. ' + label + ' ' + RESET)
+            else:
+                print(' ' + str(num) + '. ' + label + ' - not enough EP')
+        defend_num = attack_offset + len(available_attacks)
+        item_num = defend_num + 1
+        flee_num = item_num + 1
+        print(CYAN + ' ' + str(defend_num) + '. Defend' + RESET)
+        print(CYAN + ' ' + str(item_num) + '. Use Item' + RESET)
+        print(CYAN + ' ' + str(flee_num) + '. Flee' + RESET)
         print('')
         action = input('Choose action: ')
 
-        if action not in ['1', '2', '3', '4', '5', '6']:
+        valid_actions = [str(x) for x in range(1, flee_num + 1)]
+        if action not in valid_actions:
             print('Invalid choice.')
             continue
-        if action == '3' and (level < 5 or player_ep < 10):
-            print('Cannot use that attack.')
-            continue
-        if action == '5':
+        if action == str(item_num):
             print('[Item placeholder]')
             continue
-        if action == '6':
+        if action == str(flee_num):
             print('You flee from the battle!')
             return 'fled'
-        
-        player_defending = action == '4'
+
+        selected_attack = None
+        action_num = int(action)
+        if action_num >= attack_offset and action_num < defend_num:
+            attack_index = action_num - attack_offset
+            selected_attack = available_attacks[attack_index]
+            if player_ep < selected_attack['cost']:
+                print('Not enough EP.')
+                continue
+
+        player_defending = action == str(defend_num)
         player_faster = stats['SPD'] >= enemy['stats']['SPD']
 
         if player_defending:
@@ -617,9 +661,9 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             damage_taken = old_hp - player_hp
             player_hp = player_hp + int(damage_taken * 0.5)
         elif player_faster:
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element)
-            if action == '3':
-                player_ep = player_ep - 10
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
+            if selected_attack is not None:
+                player_ep = player_ep - selected_attack['cost']
             if enemy_hp <= 0:
                 print('')
                 print('The ' + enemy_display + ' fades into darkness.')
@@ -634,9 +678,9 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 print('You have fallen...')
                 return False
             print('')
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element)
-            if action == '3':
-                player_ep = player_ep - 10
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
+            if selected_attack is not None:
+                player_ep = player_ep - selected_attack['cost']
 
         if enemy_hp <= 0:
             print('')
