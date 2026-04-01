@@ -25,6 +25,21 @@ NATURE   = '\033[1m\033[42m\033[97m'
 ELECTRIC = '\033[1m\033[103m\033[97m'
 PLASMA   = '\033[1m\033[104m\033[97m'
 AETHER   = '\033[1m\033[45m\033[97m'
+# Element name color mapping
+element_colors = {
+    'Earth'   : EARTH,
+    'Air'     : AIR,
+    'Water'   : WATER,
+    'Fire'    : FIRE,
+    'Stone'   : STONE,
+    'Storm'   : STORM,
+    'Magma'   : MAGMA,
+    'Ice'     : ICE,
+    'Nature'  : NATURE,
+    'Electric': ELECTRIC,
+    'Plasma'  : PLASMA,
+    'Aether'  : AETHER,
+}
 
 # Class stat modifiers
 class_mods = {
@@ -188,9 +203,9 @@ def show_stats(name, player_class, element_1, element_2, level, stats, player_xp
     print(YELLOW + BOLD + '--- CHARACTER ---' + RESET)
     print('Name:    ' + name)
     print('Class:   ' + player_class)
-    print('Element: ' + element_1)
+    print('Element: ' + element_colors.get(element_1, '') + ' ' + element_1 + ' ' + RESET)
     if element_2 != 'None':
-        print('Slot 2: ' + element_2)
+        print('Slot 2:  ' + element_colors.get(element_2, '') + ' ' + element_2 + ' ' + RESET)
     print('Level:   ' + level)
     xp_needed = int(level) * 25 + 10
     print('XP:      ' + str(player_xp) + '/' + str(xp_needed))
@@ -484,17 +499,19 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
             damage= int(damage * 1.5)
         enemy_hp = enemy_hp - damage
         if crit:
-            print(YELLOW + 'CRITICAL HIY! ' + RESET + 'You channel deep elemental power for ' + str(damage) + ' damage!')
+            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You channel deep elemental power for ' + str(damage) + ' damage!')
         else:
             print('You channel deep elemental power for ' + str(damage) + ' damage!')
     return enemy_hp
 
 def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep):
     matchup = get_matchup(enemy['element'], player_element, player_element_2)
+    enemy_color = element_colors.get(enemy['element'], '')
+    enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
     hp_percent = enemy_hp / enemy['max_hp']
 
     if hp_percent <= 0.20:
-        print('The ' + enemy['name'] + ' braces itself.')
+        print('The ' + enemy_display + ' braces itself.')
         return player_hp, enemy_ep, True
     
     use_etk = enemy['stats']['ETK'] > enemy['stats']['ATK']
@@ -512,14 +529,14 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
         player_hp = player_hp - enemy_damage
         if use_etk:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
             else:
-                print('The ' + enemy['name'] + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
+                print('The ' + enemy_display + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
         else:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
             else:
-                print('The ' + enemy['name'] + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
+                print('The ' + enemy_display + ' unleashes a powerful strike for ' + str(enemy_damage) + ' damage!')
     else:
         if use_etk:
             enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['basic_el'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
@@ -532,14 +549,14 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
         player_hp = player_hp - enemy_damage
         if use_etk:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
             else:
-                print('The ' + enemy['name'] + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+                print('The ' + enemy_display + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
         else:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' strikes for ' + str(enemy_damage) + ' damage!')
             else:
-                print('The ' + enemy['name'] + ' strikes for ' + str(enemy_damage) + ' damage!')
+                print('The ' + enemy_display + ' strikes for ' + str(enemy_damage) + ' damage!')
 
     return player_hp, enemy_ep, False        
 
@@ -552,10 +569,12 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
     player_ep = max_ep
     enemy_max_ep = int((enemy['stats']['ETK'] + enemy['stats']['EDF']) *0.75)
     enemy_ep = enemy_max_ep
+    enemy_color = element_colors.get(enemy['element'], '')
+    enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
 
     print('')
     print(YELLOW + BOLD + '--- BATTLE ---' + RESET)
-    print('A ' + enemy['name'] + ' (Lv ' + str(enemy['level']) + ') appears!')
+    print('A ' + enemy_display + ' (Lv ' + str(enemy['level']) + ') appears!')
     print('')
 
     while True:
@@ -603,7 +622,7 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 player_ep = player_ep - 10
             if enemy_hp <= 0:
                 print('')
-                print('The ' + enemy['name'] + ' fades into darkness.')
+                print('The ' + enemy_display + ' fades into darkness.')
                 print('Victory!')
                 return enemy['level']
             print('')
@@ -621,7 +640,7 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
 
         if enemy_hp <= 0:
             print('')
-            print('The ' + enemy['name'] + ' fades into darkness.')
+            print('The ' + enemy_display + ' fades into darkness.')
             print('Victory!')
             return enemy['level']
         
