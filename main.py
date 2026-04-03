@@ -65,6 +65,13 @@ mastery_paths = {
     'Sage':    ['Shaman', 'Primal'],
     'Magi':    ['Alchemist', 'Druid'],
 }
+# Class focus
+focus_class = {
+    'Warrior': 'Warrior', 'Warden': 'Warrior', 'Arbiter': 'Warrior',
+    'Caster': 'Caster', 'Ranger': 'Caster', 'Channeler': 'Caster',
+    'Sage': 'Sage', 'Shaman': 'Sage', 'Primal': 'Sage',
+    'Magi': 'Magi', 'Alchemist': 'Magi', 'Druid': 'Magi',
+}
 
 # Element stat modifiers
 element_mods = {
@@ -603,63 +610,157 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
 
     available_attacks = get_available_attacks(player_element, player_level)
     el_color = element_colors.get(player_element, '')
-
+    focus_buffs = {}
+    saved_stats = {}
+    
     while True:
         print('Your HP: ' + str(player_hp) + '/' + str(stats['HP']) + ' EP: ' + str(player_ep) + '/' + str(max_ep))
         print('Enemy HP: ' + str(enemy_hp) + '/' + str(enemy['max_hp']))
         print('')
-        print(CYAN + ' 1. Attack (physical)' + RESET)
-        print(CYAN + ' 2. Elemental Attack' + RESET)
-        attack_offset = 3
-        for i, atk in enumerate(available_attacks):
-            num = attack_offset + i
-            if atk['stat'] == 'buff':
-                label = atk['name'] + ' (buff) - ' + str(atk['cost']) + ' EP'
-            else:
-                label = atk['name'] + ' - ' + str(atk['cost']) + ' EP'
-            if player_ep >= atk['cost']:
-                print(el_color + ' ' + str(num) + '. ' + label + ' ' + RESET)
-            else:
-                print(' ' + str(num) + '. ' + label + ' - not enough EP')
-        defend_num = attack_offset + len(available_attacks)
-        item_num = defend_num + 1
-        flee_num = item_num + 1
-        print(CYAN + ' ' + str(defend_num) + '. Defend' + RESET)
-        print(CYAN + ' ' + str(item_num) + '. Use Item' + RESET)
-        print(CYAN + ' ' + str(flee_num) + '. Flee' + RESET)
+        print(CYAN + ' 1. Attack' + RESET)
+        print(CYAN + ' 2. Defend' + RESET)
+        print(CYAN + ' 3. Bag' + RESET)
+        print(CYAN + ' 4. Flee' + RESET)
         print('')
-        action = input('Choose action: ')
+        main_choice = input('Choose action: ')
 
-        valid_actions = [str(x) for x in range(1, flee_num + 1)]
-        if action not in valid_actions:
+        if main_choice not in ['1', '2', '3', '4']:
             print('Invalid choice.')
             continue
-        if action == str(item_num):
-            print('[Item placeholder]')
-            continue
-        if action == str(flee_num):
+        if main_choice == '4':
             print('You flee from the battle!')
             return 'fled'
+        if main_choice == '3':
+            print('[Bag placeholder]')
+            continue
 
+        action = None
         selected_attack = None
-        action_num = int(action)
-        if action_num >= attack_offset and action_num < defend_num:
-            attack_index = action_num - attack_offset
-            selected_attack = available_attacks[attack_index]
-            if player_ep < selected_attack['cost']:
+        player_defending = False
+
+        if main_choice == '1':
+            print('')
+            print(CYAN + ' 1. Physical Attack' + RESET)
+            print(CYAN + ' 2. Elemental Attack' + RESET)
+            for i, atk in enumerate(available_attacks):
+                num = 3 + i
+                if atk['stat'] == 'buff':
+                    label = atk['name'] + ' (buff) - ' + str(atk['cost']) + ' EP'
+                else:
+                    label = atk['name'] + ' - ' + str(atk['cost']) + ' EP'
+                if player_ep >= atk['cost']:
+                    print(el_color + ' ' + str(num) + '. ' + label + ' ' + RESET)
+                else:
+                    print(' ' + str(num) + '. ' + label + ' - not enough EP')
+            back_num = 3 + len(available_attacks)
+            print(CYAN + ' ' + str(back_num) + '. Back' + RESET)
+            print('')
+            atk_choice = input('Choose attack: ')
+            valid_atk = [str(x) for x in range(1, back_num + 1)]
+            if atk_choice not in valid_atk:
+                print('Invalid choice.')
+                continue
+            if atk_choice == str(back_num):
+                continue
+            atk_num = int(atk_choice)
+            if atk_choice in ['1', '2']:
+                action = atk_choice
+            elif atk_num >= 3 and atk_num < back_num:
+                attack_index = atk_num - 3
+                selected_attack = available_attacks[attack_index]
+                if player_ep < selected_attack['cost']:
+                    print('Not enough EP.')
+                    continue
+
+        elif main_choice == '2':
+            print('')
+            print(CYAN + ' 1. Basic Defend' + RESET + ' - free')
+            def_options = ['basic']
+            next_num = 2
+            if level >= 10:
+                if player_ep >= 25:
+                    print(el_color + ' ' + str(next_num) + '. Elemental Defend - 25 EP ' + RESET)
+                else:
+                    print(' ' + str(next_num) + '. Elemental Defend - not enough EP')
+                def_options.append('elemental')
+                next_num = next_num + 1
+            if level >= 30:
+                if player_ep >= 75:
+                    print(el_color + ' ' + str(next_num) + '. Great Defend - 75 EP ' + RESET)
+                else:
+                    print(' ' + str(next_num) + '. Great Defend - not enough EP')
+                def_options.append('great')
+                next_num = next_num + 1
+            print(CYAN + ' ' + str(next_num) + '. Focus' + RESET + ' - free')
+            def_options.append('focus')
+            next_num = next_num + 1
+            print(CYAN + ' ' + str(next_num) + '. Back' + RESET)
+            print('')
+            def_choice = input('Choose option: ')
+            valid_def = [str(x) for x in range(1, next_num + 1)]
+            if def_choice not in valid_def:
+                print('Invalid choice.')
+                continue
+            if def_choice == str(next_num):
+                continue
+            picked = def_options[int(def_choice) - 1]
+            if picked == 'elemental' and player_ep < 25:
                 print('Not enough EP.')
                 continue
-
-        player_defending = action == str(defend_num)
+            if picked == 'great' and player_ep < 75:
+                print('Not enough EP.')
+                continue
+            if picked in ['basic', 'elemental', 'great']:
+                player_defending = picked
+            elif picked == 'focus':
+                base = focus_class[player_class]
+                if base == 'Magi':
+                    ep_back = int(max_ep * 0.30)
+                else:
+                    ep_back = int(max_ep * 0.25)
+                player_ep = min(max_ep, player_ep + ep_back)
+                print('You focus your energy. Recovered ' + str(ep_back) + ' EP.')
+                if base == 'Warrior':
+                    focus_buffs = {'ATK': int(stats['ATK'] * 0.10)}
+                elif base == 'Caster':
+                    focus_buffs = {'ATK': int(stats['ATK'] * 0.10)}
+                elif base == 'Sage':
+                    focus_buffs = {'DEF': int(stats['DEF'] * 0.05), 'EVN': int(stats['EVN'] * 0.05)}
+                elif base == 'Magi':
+                    focus_buffs = {'ETK': int(stats['ETK'] * 0.10)}
+        if focus_buffs:
+            saved_stats = {}
+            for stat in focus_buffs:
+                saved_stats[stat] = stats[stat]
+                stats[stat] = stats[stat] + focus_buffs[stat]
         player_faster = stats['SPD'] >= enemy['stats']['SPD']
 
         if player_defending:
+            if player_defending == 'basic':
+                def_mult = 0.50
+                evn_mult = 0.25
+            elif player_defending == 'elemental':
+                def_mult = 0.25
+                evn_mult = 0.50
+                player_ep = player_ep - 25
+            elif player_defending == 'great':
+                def_mult = 0.75
+                evn_mult = 0.50
+                player_ep = player_ep - 75
+            def_boost = int(stats['DEF'] * def_mult)
+            edf_boost = int(stats['EDF'] * def_mult)
+            evn_boost = int(stats['EVN'] * evn_mult)
+            stats['DEF'] = stats['DEF'] + def_boost
+            stats['EDF'] = stats['EDF'] + edf_boost
+            stats['EVN'] = stats['EVN'] + evn_boost
             print('You brace yourself.')
             print('')
-            old_hp = player_hp
             player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
-            damage_taken = old_hp - player_hp
-            player_hp = player_hp + int(damage_taken * 0.5)
+            stats['DEF'] = stats['DEF'] - def_boost
+            stats['EDF'] = stats['EDF'] - edf_boost
+            stats['EVN'] = stats['EVN'] - evn_boost
+        elif player_defending == False and action is None and selected_attack is None:
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
         elif player_faster:
             enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
             if selected_attack is not None:
@@ -687,14 +788,19 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             print('The ' + enemy_display + ' fades into darkness.')
             print('Victory!')
             return enemy['level']
-        
+
         if player_hp <= 0:
             print('')
             print('You have fallen...')
             return False
-        
+
         player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
         enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
+        if saved_stats:
+            for stat in saved_stats:
+                stats[stat] = saved_stats[stat]
+            saved_stats = {}
+            focus_buffs = {}
         print('')
                                                           
 # Title screen
