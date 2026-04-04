@@ -485,8 +485,29 @@ def create_enemy(region, difficulty, player_level):
     }
     return enemy
 
+def check_dodge(evn, attack_stat, level):
+    cap = 28 + (level * 0.10)
+    chance = (evn ** 2 / (evn ** 2 + attack_stat ** 2)) * cap
+    roll = random.uniform(0, 100)
+    return roll < chance
+
 def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack):
     matchup = get_matchup(player_element, enemy['element'], enemy['element_2'])
+    
+    if action == '1':
+        atk_stat = stats['ATK']
+    elif action == '2':
+        atk_stat = stats['ETK']
+    elif selected_attack is not None and selected_attack['stat'] == 'ATK':
+        atk_stat = stats['ATK']
+    elif selected_attack is not None and selected_attack['stat'] == 'ETK':
+        atk_stat = stats['ETK']
+    else:
+        atk_stat = None
+    if atk_stat is not None and check_dodge(enemy['stats']['EVN'], atk_stat, enemy['level']):
+        print('The ' + enemy['name'] + ' dodges your attack!')
+        return enemy_hp
+    
     if action == '1':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
         damage = int(damage * matchup)
@@ -535,7 +556,7 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
             print(el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' deals ' + str(damage) + ' damage!')
     return enemy_hp
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep):
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level):
     matchup = get_matchup(enemy['element'], player_element, player_element_2)
     enemy_color = element_colors.get(enemy['element'], '')
     enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
@@ -546,6 +567,14 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
         return player_hp, enemy_ep, True
     
     use_etk = enemy['stats']['ETK'] > enemy['stats']['ATK']
+
+    if use_etk:
+        enemy_atk_stat = enemy['stats']['ETK']
+    else:
+        enemy_atk_stat = enemy['stats']['ATK']
+    if check_dodge(stats['EVN'], enemy_atk_stat, level):
+        print('You dodge the attack!')
+        return player_hp, enemy_ep, False
 
     if enemy['level'] >= 5 and enemy_ep >= 10:
         if use_etk:
@@ -755,12 +784,12 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             stats['EVN'] = stats['EVN'] + evn_boost
             print('You brace yourself.')
             print('')
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
             stats['DEF'] = stats['DEF'] - def_boost
             stats['EDF'] = stats['EDF'] - edf_boost
             stats['EVN'] = stats['EVN'] - evn_boost
         elif player_defending == False and action is None and selected_attack is None:
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
         elif player_faster:
             enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
             if selected_attack is not None:
@@ -771,9 +800,9 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 print('Victory!')
                 return enemy['level']
             print('')
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
         else:
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
             if player_hp <= 0:
                 print('')
                 print('You have fallen...')
