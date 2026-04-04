@@ -47,7 +47,7 @@ class_mods = {
     'Warden':    {'ATK': 2, 'DEF': 3, 'ETK': 0, 'EDF': 3, 'EVN': 2, 'SPD': 0, 'AFT': 0},
     'Arbiter':   {'ATK': 1, 'DEF': 1, 'ETK': 4, 'EDF': 1, 'EVN': 2, 'SPD': 1, 'AFT': 0},
     'Caster':    {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 0, 'SPD': 1, 'AFT': 0},
-    'Ranger':    {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 2, 'SPD': 4, 'AFT': 0},              
+    'Ranger':    {'ATK': 2, 'DEF': 1, 'ETK': 1, 'EDF': 0, 'EVN': 2, 'SPD': 4, 'AFT': 0},
     'Channeler': {'ATK': 3, 'DEF': 1, 'ETK': 3, 'EDF': 1, 'EVN': 0, 'SPD': 2, 'AFT': 0},
     'Sage':      {'ATK': 0, 'DEF': 0, 'ETK': 1, 'EDF': 1, 'EVN': 1, 'SPD': 1, 'AFT': 1},
     'Shaman':    {'ATK': 0, 'DEF': 2, 'ETK': 1, 'EDF': 2, 'EVN': 2, 'SPD': 1, 'AFT': 2},
@@ -77,7 +77,7 @@ focus_class = {
 element_mods = {
     'Earth':    {'HP': 5, 'ATK': 1, 'DEF': 3, 'ETK': 1, 'EDF': 2, 'EVN': -1, 'SPD': -1, 'AFT': 0},
     'Stone':    {'HP': 6, 'ATK': 0, 'DEF': 4, 'ETK': 0, 'EDF': 4, 'EVN': -2, 'SPD': -2, 'AFT': 0},
-    'Nature':   {'HP': 8, 'ATK': -3, 'DEF': 1, 'ETK': -3, 'EDF': 1, 'EVN': 2, 'SPD': -2,'AFT': 6},
+    'Nature':   {'HP': 8, 'ATK': -3, 'DEF': 1, 'ETK': -3, 'EDF': 1, 'EVN': 2, 'SPD': -2, 'AFT': 6},
     'Air':      {'HP': 2, 'ATK': -1, 'DEF': -1, 'ETK': 2, 'EDF': 1, 'EVN': 3, 'SPD': 4, 'AFT': 0},
     'Storm':    {'HP': 2, 'ATK': -1, 'DEF': -1, 'ETK': 2, 'EDF': 2, 'EVN': 2, 'SPD': 0, 'AFT': 4},
     'Electric': {'HP': 0, 'ATK': 3, 'DEF': -2, 'ETK': 3, 'EDF': -2, 'EVN': 5, 'SPD': 3, 'AFT': 0},
@@ -104,6 +104,20 @@ element_matchups = {
     'Air':   {'Earth': 1.30, 'Fire': 0.80},
     'Fire':  {'Air': 1.30, 'Water': 0.80},
     'Water': {'Fire': 1.30, 'Earth': 0.80},
+}
+element_status = {
+    'Earth': 'Bind',
+    'Stone': 'Crush',
+    'Nature': 'Leech',
+    'Air': 'Lift',
+    'Storm': 'Atmo Shift',
+    'Electric': 'Static',
+    'Fire': 'Burn',
+    'Magma': 'Bind+Burn',
+    'Plasma': 'Pierce',
+    'Water': 'Soak',
+    'Ice': 'Freeze',
+    'Aether': 'Reality Fracture',
 }
 
 def get_matchup(attacker_element, defender_element, defender_element_2):
@@ -151,32 +165,32 @@ move_power = {
 # Element attack data: name, stat type, EP cost, power tier
 element_attacks = {
     'Earth': {
-        'A': {'name': 'Mud Slide', 'stat': 'ATK', 'cost': 10, 'power': 'A'},
-        'B': {'name': 'Clay Skin', 'stat': 'buff', 'cost': 25, 'power': 'B'},
-        'C': {'name': 'Tremor', 'stat': 'ATK', 'cost': 45, 'power': 'C'},
-        'D': {'name': 'Sandstorm', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
-        'E': {'name': 'Earthquake', 'stat': 'ATK', 'cost': 100, 'power': 'E'},
+        'A': {'name': 'Mud Slide', 'stat': 'ATK', 'cost': 10, 'power': 'A', 'status_chance': 15},
+        'B': {'name': 'Clay Skin', 'stat': 'buff', 'cost': 25, 'power': 'B', 'status_chance': 0},
+        'C': {'name': 'Tremor', 'stat': 'ATK', 'cost': 45, 'power': 'C', 'status_chance': 15},
+        'D': {'name': 'Sandstorm', 'stat': 'ETK', 'cost': 70, 'power': 'D', 'status_chance': 15},
+        'E': {'name': 'Earthquake', 'stat': 'ATK', 'cost': 100, 'power': 'E', 'status_chance': 20},
     },
     'Air': {
-        'A': {'name': 'Gust', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
-        'B': {'name': 'Air Blade', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
-        'C': {'name': 'Tailwind', 'stat': 'buff', 'cost': 45, 'power': 'C'},
-        'D': {'name': 'Cyclone', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
-        'E': {'name': 'Hurricane', 'stat': 'ETK', 'cost': 100, 'power': 'E'},
+        'A': {'name': 'Gust', 'stat': 'ETK', 'cost': 10, 'power': 'A', 'status_chance': 0},
+        'B': {'name': 'Air Blade', 'stat': 'ATK', 'cost': 25, 'power': 'B', 'status_chance': 0},
+        'C': {'name': 'Tailwind', 'stat': 'buff', 'cost': 45, 'power': 'C', 'status_chance': 0},
+        'D': {'name': 'Cyclone', 'stat': 'ETK', 'cost': 70, 'power': 'D', 'status_chance': 0},
+        'E': {'name': 'Hurricane', 'stat': 'ETK', 'cost': 100, 'power': 'E', 'status_chance': 50, 'status_override': 'Soak'},
     },
     'Fire': {
-        'A': {'name': 'Flare', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
-        'B': {'name': 'Fire Dance', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
-        'C': {'name': 'Overheat', 'stat': 'buff', 'cost': 45, 'power': 'C'},
-        'D': {'name': 'Scorched Earth', 'stat': 'ETK', 'cost': 70, 'power': 'D'},
-        'E': {'name': 'Hellfire', 'stat': 'ATK', 'cost': 100, 'power': 'E'},
+        'A': {'name': 'Flare', 'stat': 'ETK', 'cost': 10, 'power': 'A', 'status_chance': 10},
+        'B': {'name': 'Fire Dance', 'stat': 'ATK', 'cost': 25, 'power': 'B', 'status_chance': 15},
+        'C': {'name': 'Overheat', 'stat': 'buff', 'cost': 45, 'power': 'C', 'status_chance': 0},
+        'D': {'name': 'Scorched Earth', 'stat': 'ETK', 'cost': 70, 'power': 'D', 'status_chance': 25},
+        'E': {'name': 'Hellfire', 'stat': 'ATK', 'cost': 100, 'power': 'E', 'status_chance': 100},
     },
     'Water': {
-        'A': {'name': 'Soak', 'stat': 'ETK', 'cost': 10, 'power': 'A'},
-        'B': {'name': 'Riptide', 'stat': 'ATK', 'cost': 25, 'power': 'B'},
-        'C': {'name': 'Flood', 'stat': 'ETK', 'cost': 45, 'power': 'C'},
-        'D': {'name': 'Tidal Surge', 'stat': 'ATK', 'cost': 70, 'power': 'D'},
-        'E': {'name': 'Tsunami', 'stat': 'ETK', 'cost': 100, 'power': 'E'},
+        'A': {'name': 'Soak', 'stat': 'ETK', 'cost': 10, 'power': 'A', 'status_chance': 100},
+        'B': {'name': 'Riptide', 'stat': 'ATK', 'cost': 25, 'power': 'B', 'status_chance': 30},
+        'C': {'name': 'Flood', 'stat': 'ETK', 'cost': 45, 'power': 'C', 'status_chance': 30},
+        'D': {'name': 'Tidal Surge', 'stat': 'ATK', 'cost': 70, 'power': 'D', 'status_chance': 30},
+        'E': {'name': 'Tsunami', 'stat': 'ETK', 'cost': 100, 'power': 'E', 'status_chance': 50},
     },
 }
 
@@ -437,9 +451,9 @@ def create_enemy(region, difficulty, player_level):
         enemy_level = level
     else:
         enemy_level = max(1, int(level * 1.25))
-    
+
     enemy_class = random.choice(base_classes)
-    if enemy_level >=30:
+    if enemy_level >= 30:
         enemy_class = random.choice(mastery_paths[enemy_class])
 
     enemy_element = region
@@ -460,7 +474,7 @@ def create_enemy(region, difficulty, player_level):
             enemy_element_2 = element_trees[second_tree][1]
         else:
             enemy_element_2 = second_tree
-    
+
     base = 15
     c = class_mods[enemy_class]
     e = element_mods[enemy_element]
@@ -491,9 +505,9 @@ def check_dodge(evn, attack_stat, level):
     roll = random.uniform(0, 100)
     return roll < chance
 
-def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack):
+def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods):
     matchup = get_matchup(player_element, enemy['element'], enemy['element_2'])
-    
+
     if action == '1':
         atk_stat = stats['ATK']
     elif action == '2':
@@ -507,7 +521,7 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
     if atk_stat is not None and check_dodge(enemy['stats']['EVN'], atk_stat, enemy['level']):
         print('The ' + enemy['name'] + ' dodges your attack!')
         return enemy_hp
-    
+
     if action == '1':
         damage = max(1, int(((2 * level / 5 + 2) * move_power['basic'] * stats['ATK'] / enemy['stats']['DEF']) / 70 + 2))
         damage = int(damage * matchup)
@@ -526,13 +540,8 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
         if crit:
             damage = int(damage * 1.5)
         enemy_hp = enemy_hp - damage
-        status_roll = random.randint(1, 100)
-        if crit and status_roll <= 5:
-            print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
-        elif crit:
+        if crit:
             print(YELLOW + 'CRITICAL HIT! ' + RESET + 'You unleash elemental force for ' + str(damage) + ' damage!')
-        elif status_roll <= 5:
-            print('You unleash elemental force for ' + str(damage) + ' damage! Status effect applied!')
         else:
             print('You unleash elemental force for ' + str(damage) + ' damage!')
     elif selected_attack is not None:
@@ -554,18 +563,23 @@ def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_elem
             print(YELLOW + 'CRITICAL HIT! ' + RESET + el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' deals ' + str(damage) + ' damage!')
         else:
             print(el_color + ' ' + selected_attack['name'] + ' ' + RESET + ' deals ' + str(damage) + ' damage!')
+    status_name = element_status.get(player_element, None)
+    if status_name and action == '2':
+        if random.randint(1, 100) <= 5:
+            inflict_status(status_name, enemy_statuses, enemy['stats'], enemy_status_mods, enemy['max_hp'], player_element)
+            print(element_colors.get(player_element, '') + ' ' + status_name + ' ' + RESET + ' applied!')
+    elif status_name and selected_attack is not None and selected_attack['status_chance'] > 0:
+        actual_status = selected_attack.get('status_override', status_name)
+        if random.randint(1, 100) <= selected_attack['status_chance']:
+            inflict_status(actual_status, enemy_statuses, enemy['stats'], enemy_status_mods, enemy['max_hp'], player_element)
+            print(element_colors.get(player_element, '') + ' ' + actual_status + ' ' + RESET + ' applied!')
     return enemy_hp
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level):
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods):
     matchup = get_matchup(enemy['element'], player_element, player_element_2)
     enemy_color = element_colors.get(enemy['element'], '')
     enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
-    hp_percent = enemy_hp / enemy['max_hp']
 
-    if hp_percent <= 0.20:
-        print('The ' + enemy_display + ' braces itself.')
-        return player_hp, enemy_ep, True
-    
     use_etk = enemy['stats']['ETK'] > enemy['stats']['ATK']
 
     if use_etk:
@@ -578,15 +592,22 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
 
     if enemy['level'] >= 5 and enemy_ep >= 10:
         if use_etk:
-            enemy_damage = max(1, int(((2* enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
+            enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ETK'] / stats['EDF']) / 70 + 2))
         else:
-            enemy_damage = max(1, int(((2* enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
+            enemy_damage = max(1, int(((2 * enemy['level'] / 5 + 2) * move_power['A'] * enemy['stats']['ATK'] / stats['DEF']) / 70 + 2))
         enemy_ep = enemy_ep - 10
         enemy_damage = int(enemy_damage * matchup)
         crit = random.randint(1, 100) <= 5
         if crit:
             enemy_damage = int(enemy_damage * 1.5)
         player_hp = player_hp - enemy_damage
+        if 'Freeze' in player_statuses:
+            del player_statuses['Freeze']
+            if 'Freeze' in player_status_mods:
+                for stat in player_status_mods['Freeze']:
+                    stats[stat] = stats[stat] - player_status_mods['Freeze'][stat]
+                del player_status_mods['Freeze']
+            print('The hit breaks the freeze!')
         if use_etk:
             if crit:
                 print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' channels elemental power for ' + str(enemy_damage) + ' damage!')
@@ -607,9 +628,16 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
         if crit:
             enemy_damage = int(enemy_damage * 1.5)
         player_hp = player_hp - enemy_damage
+        if 'Freeze' in player_statuses:
+            del player_statuses['Freeze']
+            if 'Freeze' in player_status_mods:
+                for stat in player_status_mods['Freeze']:
+                    stats[stat] = stats[stat] - player_status_mods['Freeze'][stat]
+                del player_status_mods['Freeze']
+            print('The hit breaks the freeze!')
         if use_etk:
             if crit:
-                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display +' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
+                print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
             else:
                 print('The ' + enemy_display + ' strikes with elemental force for ' + str(enemy_damage) + ' damage!')
         else:
@@ -617,8 +645,89 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
                 print(YELLOW + 'CRITICAL HIT! ' + RESET + 'The ' + enemy_display + ' strikes for ' + str(enemy_damage) + ' damage!')
             else:
                 print('The ' + enemy_display + ' strikes for ' + str(enemy_damage) + ' damage!')
+    status_name = element_status.get(enemy['element'], None)
+    if status_name:
+        chance = 5
+        if enemy['level'] >= 5 and enemy_ep >= 0:
+            chance = 15
+        if random.randint(1, 100) <= chance:
+            inflict_status(status_name, player_statuses, stats, player_status_mods, stats['HP'], enemy['element'])
+            print(element_colors.get(enemy['element'], '') + ' ' + status_name + ' ' + RESET + ' applied to you!')
+    return player_hp, enemy_ep, False
 
-    return player_hp, enemy_ep, False        
+def apply_statuses(statuses, target_hp, target_max_hp, target_stats, saved_status_mods):
+    expired = []
+    damage = 0
+    heal = 0
+    frozen = False
+    for status, info in statuses.items():
+        if status == 'Burn':
+            burn_dmg = max(1, int(target_max_hp * 0.05))
+            damage = damage + burn_dmg
+            print('Burn deals ' + str(burn_dmg) + ' damage!')
+        elif status == 'Leech':
+            leech_dmg = max(1, int(target_max_hp * 0.025))
+            damage = damage + leech_dmg
+            heal = max(1, int(target_max_hp * 0.025))
+            print('Leech drains ' + str(leech_dmg) + ' HP!')
+        elif status == 'Static':
+            static_dmg = max(1, int(target_max_hp * 0.025))
+            damage = damage + static_dmg
+            print('Static shocks for ' + str(static_dmg) + ' damage!')
+        elif status == 'Freeze':
+            frozen = True
+        info['turns'] = info['turns'] - 1
+        if info['turns'] <= 0:
+            expired.append(status)
+    for status in expired:
+        del statuses[status]
+        if status in saved_status_mods:
+            for stat in saved_status_mods[status]:
+                target_stats[stat] = target_stats[stat] - saved_status_mods[status][stat]
+            del saved_status_mods[status]
+    target_hp = target_hp - damage
+    return target_hp, heal, frozen
+
+def inflict_status(status_name, statuses, target_stats, saved_status_mods, target_max_hp, source_element):
+    if status_name == 'Soak':
+        for s in list(statuses.keys()):
+            if s in saved_status_mods:
+                for stat in saved_status_mods[s]:
+                    target_stats[stat] = target_stats[stat] - saved_status_mods[s][stat]
+                del saved_status_mods[s]
+        statuses.clear()
+        return
+    if status_name == 'Bind+Burn':
+        statuses['Bind'] = {'turns': 4, 'element': source_element}
+        statuses['Burn'] = {'turns': 4, 'element': source_element}
+        return
+    durations = {
+        'Bind': 4,
+        'Crush': 1,
+        'Lift': 3,
+        'Atmo Shift': 3,
+        'Freeze': 3,
+        'Burn': 4,
+        'Leech': 5,
+        'Static': 3,
+    }
+    if status_name not in durations:
+        return
+    statuses[status_name] = {'turns': durations[status_name], 'element': source_element}
+    mods = {}
+    if status_name == 'Crush':
+        mods['SPD'] = int(target_stats['SPD'] * 0.50)
+    elif status_name == 'Lift':
+        mods['SPD'] = -int(target_stats['SPD'] * 0.15)
+    elif status_name == 'Atmo Shift':
+        mods['ETK'] = int(target_stats['ETK'] * 0.25)
+        mods['EDF'] = int(target_stats['EDF'] * 0.25)
+    elif status_name == 'Freeze':
+        mods['SPD'] = int(target_stats['SPD'] * 0.20)
+    if mods:
+        saved_status_mods[status_name] = mods
+        for stat in mods:
+            target_stats[stat] = target_stats[stat] - mods[stat]
 
 def battle(name, stats, region, difficulty, player_level, player_element, player_element_2):
     enemy = create_enemy(region, difficulty, player_level)
@@ -627,7 +736,7 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
     level = int(player_level)
     max_ep = int((stats['ETK'] + stats['EDF']) * 0.75)
     player_ep = max_ep
-    enemy_max_ep = int((enemy['stats']['ETK'] + enemy['stats']['EDF']) *0.75)
+    enemy_max_ep = int((enemy['stats']['ETK'] + enemy['stats']['EDF']) * 0.75)
     enemy_ep = enemy_max_ep
     enemy_color = element_colors.get(enemy['element'], '')
     enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
@@ -641,7 +750,11 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
     el_color = element_colors.get(player_element, '')
     focus_buffs = {}
     saved_stats = {}
-    
+    player_statuses = {}
+    enemy_statuses = {}
+    player_status_mods = {}
+    enemy_status_mods = {}
+
     while True:
         print('Your HP: ' + str(player_hp) + '/' + str(stats['HP']) + ' EP: ' + str(player_ep) + '/' + str(max_ep))
         print('Enemy HP: ' + str(enemy_hp) + '/' + str(enemy['max_hp']))
@@ -666,6 +779,32 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
         action = None
         selected_attack = None
         player_defending = False
+        frozen = 'Freeze' in player_statuses
+        if frozen and main_choice == '1':
+            print('You are frozen and cannot attack!')
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods)
+            if player_hp <= 0:
+                print('')
+                print('You have fallen...')
+                return False
+            if player_statuses:
+                print('')
+                player_hp, leech_heal, frozen = apply_statuses(player_statuses, player_hp, stats['HP'], stats, player_status_mods)
+                if leech_heal > 0:
+                    enemy_hp = min(enemy['max_hp'], enemy_hp + leech_heal)
+                for s in player_statuses:
+                    print(element_colors.get(player_statuses[s].get('element', player_element), '') + ' ' + s + ' ' + RESET + ' (' + str(player_statuses[s]['turns']) + ' turns)')
+            if enemy_statuses:
+                print('')
+                enemy_hp, leech_heal, enemy_frozen = apply_statuses(enemy_statuses, enemy_hp, enemy['max_hp'], enemy['stats'], enemy_status_mods)
+                if leech_heal > 0:
+                    player_hp = min(stats['HP'], player_hp + leech_heal)
+                for s in enemy_statuses:
+                    print(element_colors.get(enemy_statuses[s].get('element', enemy['element']), '') + ' ' + s + ' ' + RESET + ' on enemy (' + str(enemy_statuses[s]['turns']) + ' turns)')
+            player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
+            enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
+            print('')
+            continue
 
         if main_choice == '1':
             print('')
@@ -762,36 +901,40 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             for stat in focus_buffs:
                 saved_stats[stat] = stats[stat]
                 stats[stat] = stats[stat] + focus_buffs[stat]
+        enemy_will_defend = (enemy_hp / enemy['max_hp']) <= 0.20
         player_faster = stats['SPD'] >= enemy['stats']['SPD']
 
         if player_defending:
-            if player_defending == 'basic':
-                def_mult = 0.50
-                evn_mult = 0.25
-            elif player_defending == 'elemental':
-                def_mult = 0.25
-                evn_mult = 0.50
+            if player_defending == 'elemental':
                 player_ep = player_ep - 25
             elif player_defending == 'great':
-                def_mult = 0.75
-                evn_mult = 0.50
                 player_ep = player_ep - 75
-            def_boost = int(stats['DEF'] * def_mult)
-            edf_boost = int(stats['EDF'] * def_mult)
-            evn_boost = int(stats['EVN'] * evn_mult)
-            stats['DEF'] = stats['DEF'] + def_boost
-            stats['EDF'] = stats['EDF'] + edf_boost
-            stats['EVN'] = stats['EVN'] + evn_boost
             print('You brace yourself.')
             print('')
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
-            stats['DEF'] = stats['DEF'] - def_boost
-            stats['EDF'] = stats['EDF'] - edf_boost
-            stats['EVN'] = stats['EVN'] - evn_boost
+            old_hp = player_hp
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods)
+            damage_taken = old_hp - player_hp
+            if damage_taken > 0:
+                if player_defending == 'basic':
+                    reduction = int(damage_taken * 0.50)
+                elif player_defending == 'elemental':
+                    reduction = int(damage_taken * 0.25)
+                elif player_defending == 'great':
+                    reduction = int(damage_taken * 0.75)
+                player_hp = player_hp + reduction
+                print('Defended! Reduced ' + str(reduction) + ' damage.')
         elif player_defending == False and action is None and selected_attack is None:
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods)
+        elif enemy_will_defend:
+            old_enemy_hp = enemy_hp
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods)
+            if selected_attack is not None:
+                player_ep = player_ep - selected_attack['cost']
+            damage_dealt = old_enemy_hp - enemy_hp
+            enemy_hp = enemy_hp + int(damage_dealt * 0.5)
+            print('The ' + enemy_display + ' braces — damage reduced!')
         elif player_faster:
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods)
             if selected_attack is not None:
                 player_ep = player_ep - selected_attack['cost']
             if enemy_hp <= 0:
@@ -800,15 +943,15 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 print('Victory!')
                 return enemy['level']
             print('')
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods)
         else:
-            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level)
+            player_hp, enemy_ep, enemy_defending = enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods)
             if player_hp <= 0:
                 print('')
                 print('You have fallen...')
                 return False
             print('')
-            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack)
+            enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods)
             if selected_attack is not None:
                 player_ep = player_ep - selected_attack['cost']
 
@@ -822,7 +965,20 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             print('')
             print('You have fallen...')
             return False
-
+        if player_statuses:
+            print('')
+            player_hp, leech_heal, frozen = apply_statuses(player_statuses, player_hp, stats['HP'], stats, player_status_mods)
+            if leech_heal > 0:
+                enemy_hp = min(enemy['max_hp'], enemy_hp + leech_heal)
+            for s in player_statuses:
+                print(element_colors.get(player_statuses[s].get('element', player_element), '') + ' ' + s + ' ' + RESET + ' (' + str(player_statuses[s]['turns']) + ' turns)')
+        if enemy_statuses:
+            print('')
+            enemy_hp, leech_heal, enemy_frozen = apply_statuses(enemy_statuses, enemy_hp, enemy['max_hp'], enemy['stats'], enemy_status_mods)
+            if leech_heal > 0:
+                player_hp = min(stats['HP'], player_hp + leech_heal)
+            for s in enemy_statuses:
+                print(element_colors.get(enemy_statuses[s].get('element', enemy['element']), '') + ' ' + s + ' ' + RESET + ' on enemy (' + str(enemy_statuses[s]['turns']) + ' turns)')
         player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
         enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
         if saved_stats:
@@ -831,7 +987,7 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             saved_stats = {}
             focus_buffs = {}
         print('')
-                                                          
+
 # Title screen
 while True:
     print(YELLOW + BOLD + '================================' + RESET)
@@ -929,7 +1085,7 @@ while True:
             file.write(str(stats['AFT']) + '\n')
         print('Game saved.')
         show_stats(name, player_class, player_element, 'None', '0', stats, 0)
-        game_hub(name, player_class, player_element, 'None', '0', stats, 0)                             
+        game_hub(name, player_class, player_element, 'None', '0', stats, 0)
     elif choice == '2':
         if not os.path.exists('txt_rpg/save.txt'):
             print('No save file found.')
@@ -958,7 +1114,7 @@ while True:
                 'AFT': int(lines[13].strip()),
             }
             show_stats(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
-            game_hub(name, player_class, player_element, player_element_2, player_level, stats, player_xp)                             
+            game_hub(name, player_class, player_element, player_element_2, player_level, stats, player_xp)
     elif choice == '4':
         break
     elif choice == '3':
