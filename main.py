@@ -505,7 +505,7 @@ def check_dodge(evn, attack_stat, level):
     roll = random.uniform(0, 100)
     return roll < chance
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods, enemy_statuses, enemy_status_mods):
+def player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods):
     matchup = get_matchup(player_element, enemy['element'], enemy['element_2'])
 
     if action == '1':
@@ -575,7 +575,7 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
             print(element_colors.get(player_element, '') + ' ' + actual_status + ' ' + RESET + ' applied!')
     return enemy_hp
 
-def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods):
+def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, player_element_2, enemy_ep, enemy_max_ep, level, player_statuses, player_status_mods, enemy_statuses, enemy_status_mods):
     matchup = get_matchup(enemy['element'], player_element, player_element_2)
     enemy_color = element_colors.get(enemy['element'], '')
     enemy_display = 'Dim ' + enemy_color + ' ' + enemy['element'] + ' ' + RESET + enemy['class']
@@ -583,7 +583,7 @@ def enemy_turn(enemy, enemy_hp, player_hp, stats, move_power, player_element, pl
     if 'Freeze' in enemy_statuses:
         print('The ' + enemy_display + ' is frozen!')
         return player_hp, enemy_ep, False
-    
+
     use_etk = enemy['stats']['ETK'] > enemy['stats']['ATK']
 
     if use_etk:
@@ -697,7 +697,7 @@ def inflict_status(status_name, statuses, target_stats, saved_status_mods, targe
         for s in list(statuses.keys()):
             if s in saved_status_mods:
                 for stat in saved_status_mods[s]:
-                    target_stats[stat] = target_stats[stat] - saved_status_mods[s][stat]
+                    target_stats[stat] = target_stats[stat] + saved_status_mods[s][stat]
                 del saved_status_mods[s]
         statuses.clear()
         return
@@ -705,12 +705,12 @@ def inflict_status(status_name, statuses, target_stats, saved_status_mods, targe
         possible = ['Bind', 'Crush', 'Lift', 'Atmo Shift', 'Freeze', 'Burn', 'Leech', 'Static']
         cascade_chance = 5.0
         while cascade_chance >= 0.625:
+            if random.uniform(0, 100) > cascade_chance:
+                break
             pick = random.choice(possible)
             inflict_status(pick, statuses, target_stats, saved_status_mods, target_max_hp, source_element)
             print('Reality Fracture causes ' + pick + '!')
             cascade_chance = cascade_chance / 2
-            if random.uniform(0, 100) > cascade_chance:
-                break
         return
     if status_name == 'Bind+Burn':
         statuses['Bind'] = {'turns': 4, 'element': source_element}
@@ -819,6 +819,15 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
             player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
             enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
             print('')
+            if enemy_hp <= 0:
+                print('')
+                print('The ' + enemy_display + ' fades into darkness.')
+                print('Victory!')
+                return enemy['level']
+            if player_hp <= 0:
+                print('')
+                print('You have fallen...')
+                return False
             continue
 
         if main_choice == '1':
@@ -886,6 +895,15 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                         player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
                         enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
                         print('')
+                        if enemy_hp <= 0:
+                            print('')
+                            print('The ' + enemy_display + ' fades into darkness.')
+                            print('Victory!')
+                            return enemy['level']
+                        if player_hp <= 0:
+                            print('')
+                            print('You have fallen...')
+                            return False
                         continue
 
                     elif cast_choice != '1':
@@ -984,7 +1002,13 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 player_ep = player_ep - selected_attack['cost']
             damage_dealt = old_enemy_hp - enemy_hp
             enemy_hp = enemy_hp + int(damage_dealt * 0.5)
-            print('The ' + enemy_display + ' braces — damage reduced!')
+            if damage_dealt > 0:
+                print('The ' + enemy_display + ' braces — damage reduced!')
+            if enemy_hp <= 0:
+                print('')
+                print('The ' + enemy_display + ' fades into darkness.')                
+                print('Victory!')
+                return enemy['level']
         elif player_faster:
             enemy_hp = player_attack(action, level, stats, enemy, enemy_hp, move_power, player_element, selected_attack, enemy_statuses, enemy_status_mods)
             if selected_attack is not None:
@@ -1033,6 +1057,15 @@ def battle(name, stats, region, difficulty, player_level, player_element, player
                 print(element_colors.get(enemy_statuses[s].get('element', enemy['element']), '') + ' ' + s + ' ' + RESET + ' on enemy (' + str(enemy_statuses[s]['turns']) + ' turns)')
         player_ep = min(max_ep, player_ep + int(max_ep * 0.05))
         enemy_ep = min(enemy_max_ep, enemy_ep + int(enemy_max_ep * 0.05))
+        if enemy_hp <= 0:
+            print('')
+            print('The ' + enemy_display + ' fades into darkness.')
+            print('Victory!')
+            return enemy['level']
+        if player_hp <= 0:
+            print('')
+            print('You have fallen...')
+            return False
         if saved_stats:
             for stat in saved_stats:
                 stats[stat] = saved_stats[stat]
